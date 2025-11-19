@@ -170,6 +170,7 @@ hmi-prototype/
 │   ├── index.html
 │   ├── vite.config.js
 │   └── package.json
+├── CODING_STANDARDS.md         # Coding standards & best practices
 ├── DESIGN_TOKENS_GUIDE.md      # Design token documentation
 ├── COMPONENT_UPDATE_EXAMPLE.md  # How to use tokens
 └── README.md
@@ -220,7 +221,8 @@ npm run tokens:generate
 ```
 
 📚 **Full Documentation**: See [DESIGN_TOKENS_GUIDE.md](./DESIGN_TOKENS_GUIDE.md)  
-📝 **Usage Examples**: See [COMPONENT_UPDATE_EXAMPLE.md](./COMPONENT_UPDATE_EXAMPLE.md)
+📝 **Usage Examples**: See [COMPONENT_UPDATE_EXAMPLE.md](./COMPONENT_UPDATE_EXAMPLE.md)  
+⚡ **Coding Standards**: See [CODING_STANDARDS.md](./CODING_STANDARDS.md)
 
 ---
 
@@ -348,6 +350,8 @@ This is a prototype framework designed for easy customization. Feel free to:
 - Improve UI/UX
 - Optimize performance
 - Add documentation
+
+**Before contributing, please read [CODING_STANDARDS.md](./CODING_STANDARDS.md)** - especially the rule about always using design tokens instead of hardcoded values!
 
 ## 📄 License
 

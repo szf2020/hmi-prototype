@@ -1,6 +1,18 @@
+import { useState } from 'react';
 import './BottomNav.css';
 
 function BottomNav({ activeView, setActiveView }) {
+  const [driverTemp, setDriverTemp] = useState(70);
+  const [passengerTemp, setPassengerTemp] = useState(70);
+
+  const handleTempChange = (zone, direction) => {
+    if (zone === 'driver') {
+      setDriverTemp(prev => direction === 'up' ? Math.min(prev + 1, 85) : Math.max(prev - 1, 60));
+    } else {
+      setPassengerTemp(prev => direction === 'up' ? Math.min(prev + 1, 85) : Math.max(prev - 1, 60));
+    }
+  };
+
   const homeButton = {
     id: 'home',
     label: 'Home',
@@ -82,7 +94,7 @@ function BottomNav({ activeView, setActiveView }) {
 
   return (
     <div className="bottom-nav">
-      {/* Left: Home Button */}
+      {/* Left: Home Button and Driver Temp */}
       <div className="nav-left">
         <button
           className={`nav-button ${activeView === homeButton.id ? 'active' : ''}`}
@@ -91,10 +103,56 @@ function BottomNav({ activeView, setActiveView }) {
         >
           {homeButton.svg}
         </button>
+        
+        {/* Driver Temperature Control */}
+        <div className="temp-control">
+          <button 
+            className="temp-button"
+            onClick={() => handleTempChange('driver', 'down')}
+            aria-label="Decrease driver temperature"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M7 12C7 12.2525 7.10332 12.4821 7.28699 12.6772L14.3814 19.7246C14.5536 19.9082 14.7946 20 15.0587 20C15.5982 20 16 19.5983 16 19.0589C16 18.7949 15.8967 18.5653 15.7245 18.3817L9.31888 12L15.7245 5.61836C15.8967 5.43472 16 5.19369 16 4.94118C16 4.40172 15.5982 4 15.0587 4C14.7946 4 14.5536 4.09182 14.3814 4.27547L7.28699 11.3228C7.10332 11.518 7 11.7475 7 12Z" fill="white" fillOpacity="0.9"/>
+            </svg>
+          </button>
+          <div className="temp-display">{driverTemp}°</div>
+          <button 
+            className="temp-button"
+            onClick={() => handleTempChange('driver', 'up')}
+            aria-label="Increase driver temperature"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ transform: 'rotate(180deg)' }}>
+              <path d="M7 12C7 12.2525 7.10332 12.4821 7.28699 12.6772L14.3814 19.7246C14.5536 19.9082 14.7946 20 15.0587 20C15.5982 20 16 19.5983 16 19.0589C16 18.7949 15.8967 18.5653 15.7245 18.3817L9.31888 12L15.7245 5.61836C15.8967 5.43472 16 5.19369 16 4.94118C16 4.40172 15.5982 4 15.0587 4C14.7946 4 14.5536 4.09182 14.3814 4.27547L7.28699 11.3228C7.10332 11.518 7 11.7475 7 12Z" fill="white" fillOpacity="0.9"/>
+            </svg>
+          </button>
+        </div>
       </div>
 
-      {/* Right: Other Navigation Buttons */}
+      {/* Right: Other Navigation Buttons and Passenger Temp */}
       <div className="nav-right">
+        {/* Passenger Temperature Control */}
+        <div className="temp-control">
+          <button 
+            className="temp-button"
+            onClick={() => handleTempChange('passenger', 'down')}
+            aria-label="Decrease passenger temperature"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M7 12C7 12.2525 7.10332 12.4821 7.28699 12.6772L14.3814 19.7246C14.5536 19.9082 14.7946 20 15.0587 20C15.5982 20 16 19.5983 16 19.0589C16 18.7949 15.8967 18.5653 15.7245 18.3817L9.31888 12L15.7245 5.61836C15.8967 5.43472 16 5.19369 16 4.94118C16 4.40172 15.5982 4 15.0587 4C14.7946 4 14.5536 4.09182 14.3814 4.27547L7.28699 11.3228C7.10332 11.518 7 11.7475 7 12Z" fill="white" fillOpacity="0.9"/>
+            </svg>
+          </button>
+          <div className="temp-display">{passengerTemp}°</div>
+          <button 
+            className="temp-button"
+            onClick={() => handleTempChange('passenger', 'up')}
+            aria-label="Increase passenger temperature"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ transform: 'rotate(180deg)' }}>
+              <path d="M7 12C7 12.2525 7.10332 12.4821 7.28699 12.6772L14.3814 19.7246C14.5536 19.9082 14.7946 20 15.0587 20C15.5982 20 16 19.5983 16 19.0589C16 18.7949 15.8967 18.5653 15.7245 18.3817L9.31888 12L15.7245 5.61836C15.8967 5.43472 16 5.19369 16 4.94118C16 4.40172 15.5982 4 15.0587 4C14.7946 4 14.5536 4.09182 14.3814 4.27547L7.28699 11.3228C7.10332 11.518 7 11.7475 7 12Z" fill="white" fillOpacity="0.9"/>
+            </svg>
+          </button>
+        </div>
+        
         <div className="nav-buttons-group">
           {otherButtons.map((button) => (
             <button
@@ -107,6 +165,24 @@ function BottomNav({ activeView, setActiveView }) {
             </button>
           ))}
         </div>
+        
+        {/* AI Button */}
+        <button 
+          className="ai-button"
+          onClick={() => console.log('AI button clicked')}
+          aria-label="AI Assistant"
+          title="AI Assistant"
+        >
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M26 16C26.4295 16 26.7481 16.3052 26.8037 16.7354C28.0235 26.8275 29.3266 28.161 39.2373 29.2021C39.6946 29.2438 39.9999 29.5766 40 30.0068C40 30.4371 39.6946 30.7562 39.2373 30.7979C29.3266 31.8391 28.0235 33.1725 26.8037 43.2646C26.7481 43.7087 26.4296 44 26 44C25.5704 44 25.2657 43.7087 25.1963 43.2646C23.8933 33.1863 22.6456 32.0751 12.7627 30.7979C12.3053 30.7562 12 30.4371 12 30.0068C12.0001 29.5766 12.3053 29.2438 12.7627 29.2021C22.6733 28.161 23.9765 26.8276 25.1963 16.7354C25.2657 16.3052 25.5705 16 26 16ZM15 10C15.2891 10 15.5063 10.2027 15.5498 10.5068C16.2295 15.5647 16.3595 15.6667 21.5078 16.4492C21.7826 16.4927 22 16.6957 22 17C22 17.3043 21.7826 17.4929 21.5078 17.5508C16.3597 18.5362 16.2439 18.493 15.5498 23.5068C15.5064 23.7967 15.2893 24 15 24C14.7108 24 14.4936 23.7972 14.4502 23.4785C13.7994 18.4785 13.6405 18.4059 8.5498 17.5508C8.21716 17.4929 8 17.3189 8 17C8.00001 16.6957 8.2174 16.5072 8.49219 16.4492C13.6116 15.4638 13.7994 15.5214 14.4502 10.5215C14.4937 10.2028 14.7108 10 15 10ZM22 4C22.2058 4.00001 22.3091 4.11568 22.3477 4.30859C22.7978 6.94523 22.7589 7.1636 25.6914 7.65234C25.8844 7.67807 26 7.80707 26 8C26 8.1929 25.8843 8.30824 25.6914 8.33398C22.7589 8.82273 22.7978 9.04205 22.3477 11.6787C22.309 11.8715 22.2058 12 22 12C21.7943 12 21.691 11.8715 21.6523 11.6787C21.2022 9.04205 21.2411 8.82273 18.3086 8.33398C18.1157 8.30821 18 8.19287 18 8C18 7.80708 18.1157 7.67808 18.3086 7.65234C21.2411 7.16359 21.2022 6.94525 21.6523 4.30859C21.6909 4.11567 21.7943 4 22 4Z" fill="url(#paint0_linear_1308_5114)"/>
+            <defs>
+              <linearGradient id="paint0_linear_1308_5114" x1="4.773" y1="2.50994" x2="51.4974" y2="38.1095" gradientUnits="userSpaceOnUse">
+                <stop stopColor="white"/>
+                <stop offset="1" stopColor="#9A9A9A"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </button>
       </div>
     </div>
   );

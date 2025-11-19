@@ -15,6 +15,20 @@ function CentralDisplay() {
   return (
     <div className="central-display">
       <StatusBar />
+      
+      {/* Home View - Vehicle Image */}
+      {activeView === 'home' && (
+        <div className="home-vehicle-view">
+          <div className="home-vehicle-container">
+            <img 
+              src="/images/vehicle.png" 
+              alt="Porsche Vehicle" 
+              className="home-vehicle-image"
+            />
+          </div>
+        </div>
+      )}
+      
       <BottomNav activeView={activeView} setActiveView={setActiveView} />
     </div>
   );

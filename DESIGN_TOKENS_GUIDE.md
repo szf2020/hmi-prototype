@@ -263,61 +263,110 @@ spacing-64  → 64px  (XXLarge)
 
 ## 📝 Best Practices
 
+### 🚨 **GOLDEN RULE: ALWAYS USE DESIGN TOKENS**
+
+**Never hardcode visual values in your code.** Always use design tokens for colors, spacing, typography, and other design attributes. This ensures:
+- ✅ Consistent design across the application
+- ✅ Easy theme switching (dark/light modes)
+- ✅ Centralized design updates
+- ✅ Better maintainability
+- ✅ Design-developer workflow alignment
+
 ### ✅ DO
 
-1. **Use semantic tokens** instead of primitive colors:
+1. **Always use design tokens with fallback values:**
    ```css
-   /* Good */
+   /* ✅ CORRECT - Use design token with fallback */
+   gap: var(--spacing-56, 56px);
+   color: var(--color-white-90-default, #ffffffe6);
+   font-size: var(--fontSize-24, 24px);
+   ```
+
+2. **Use semantic tokens** instead of primitive colors:
+   ```css
+   /* ✅ Good */
    color: var(--onSurface-onSurface-enabled);
    
-   /* Avoid */
+   /* ⚠️ Avoid */
    color: var(--color-primitives-White-opacity-90);
    ```
 
-2. **Use typography classes** for consistent text styling:
+3. **Use typography classes** for consistent text styling:
    ```jsx
+   /* ✅ Good */
    <h1 className="typography-headline-large">Title</h1>
    ```
 
-3. **Use spacing tokens** for consistent layout:
+4. **Use spacing tokens** for ALL layout values:
    ```css
-   padding: var(--spacing-16);
-   gap: var(--spacing-12);
+   /* ✅ Good */
+   padding: var(--spacing-16, 16px);
+   gap: var(--spacing-12, 12px);
+   margin: var(--spacing-24, 24px);
    ```
 
-4. **Regenerate tokens** after modifications:
+5. **Check available tokens before creating values:**
+   - Available spacing: 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 22, 24, 28, 32, 36, 40, 44, 48, 56, 64
+   - If you need a value not in the scale, discuss with design team first
+
+6. **Regenerate tokens** after modifications:
    ```bash
    npm run tokens:generate
    ```
 
 ### ❌ DON'T
 
-1. **Don't hardcode colors or sizes:**
+1. **❌ NEVER hardcode colors, sizes, or spacing:**
    ```css
-   /* Bad */
+   /* ❌ BAD - Hardcoded values */
    color: #ffffff;
    font-size: 24px;
    padding: 16px;
+   gap: 56px;
+   
+   /* ✅ GOOD - Design tokens */
+   color: var(--color-white-100-primary, #ffffff);
+   font-size: var(--fontSize-24, 24px);
+   padding: var(--spacing-16, 16px);
+   gap: var(--spacing-56, 56px);
    ```
 
-2. **Don't use arbitrary values:**
+2. **❌ Don't use arbitrary values not in the design system:**
    ```css
-   /* Bad */
+   /* ❌ Bad */
    padding: 17px;  /* Not in spacing scale */
    font-size: 23px; /* Not in typography scale */
+   color: #abc123; /* Not in color palette */
    ```
 
-3. **Don't create inline styles** without tokens:
+3. **❌ Don't create inline styles without tokens:**
    ```jsx
-   /* Bad */
+   /* ❌ Bad */
    <div style={{ color: '#fff', padding: '16px' }} />
    
-   /* Good */
+   /* ✅ Good */
    <div style={{ 
      color: 'var(--onSurface-onSurface-enabled)', 
      padding: 'var(--spacing-16)' 
    }} />
    ```
+
+4. **❌ Don't skip the fallback value:**
+   ```css
+   /* ⚠️ Risky - No fallback */
+   gap: var(--spacing-56);
+   
+   /* ✅ Safe - With fallback */
+   gap: var(--spacing-56, 56px);
+   ```
+
+### 📋 Pre-Commit Checklist
+
+Before committing CSS/JSX changes, verify:
+- [ ] No hardcoded colors (search for `#` in CSS)
+- [ ] No hardcoded pixel values (should use `var(--spacing-*)` or `var(--fontSize-*)`)
+- [ ] All design token variables have fallback values
+- [ ] Values align with the design system scale
 
 ---
 

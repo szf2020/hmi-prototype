@@ -14,7 +14,8 @@
 .nav-left {
   display: flex;
   align-items: center;
-  flex: 0 0 auto;
+  flex: 1;
+  justify-content: flex-start;
 }
 
 /* Right side - Other buttons centered */
@@ -22,12 +23,15 @@
   flex: 1;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
 }
 
 .nav-buttons-group {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
-  gap: var(--spacing-32, 32px);
+  gap: var(--spacing-56, 56px);
   align-items: center;
 }
 
@@ -75,4 +79,107 @@
 /* Smooth transition for gradient changes */
 .nav-button stop {
   transition: stop-color 0.3s ease;
+}
+
+/* Temperature Controls */
+.temp-control {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-16, 16px);
+}
+
+.nav-left .temp-control {
+  margin-left: var(--spacing-56, 56px);
+  margin-right: 0;
+}
+
+.nav-right .temp-control {
+  margin-left: 0;
+  margin-right: var(--spacing-56, 56px);
+}
+
+.temp-button {
+  width: var(--spacing-64, 64px);
+  height: var(--spacing-64, 64px);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.temp-button:hover {
+  transform: scale(1.1);
+  opacity: var(--opacity-hover, 0.88);
+}
+
+.temp-button:active {
+  transform: scale(0.95);
+}
+
+.temp-button svg {
+  width: var(--spacing-24, 24px);
+  height: var(--spacing-24, 24px);
+  display: block;
+}
+
+.temp-display {
+  font-family: var(--fontFamily-hmi, 'TT Commons Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+  font-size: var(--fontSize-48, 48px);
+  font-weight: var(--fontWeight-semibold, 600);
+  color: var(--color-white-90-default, #ffffffe6);
+  min-width: var(--spacing-64, 64px);
+  text-align: center;
+  user-select: none;
+}
+
+/* AI Button */
+.ai-button {
+  position: relative;
+  width: var(--spacing-64, 64px);
+  height: var(--spacing-64, 64px);
+  background: transparent;
+  border-radius: var(--borderRadius-16, 16px);
+  border: 1px solid rgba(234, 128, 252, 0.2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  padding: 0;
+  margin-left: var(--spacing-56, 56px);
+}
+
+.ai-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(45deg, #609EEC 0%, #4357C9 31%, #8B32C1 67%, #C392E1 100%);
+  border-radius: var(--borderRadius-16, 16px);
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+  z-index: 0;
+}
+
+.ai-button:hover {
+  transform: scale(1.05);
+}
+
+.ai-button:hover::before {
+  opacity: 0.7;
+}
+
+.ai-button:active {
+  transform: scale(0.95);
+}
+
+.ai-button svg {
+  position: relative;
+  z-index: 1;
+  width: var(--spacing-48, 48px);
+  height: var(--spacing-48, 48px);
+  display: block;
 }
