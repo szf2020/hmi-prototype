@@ -14,13 +14,213 @@
 .camera-content {
   flex: 1;
   display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xl, 32px);
-  padding: var(--spacing-xl, 32px);
+  flex-direction: row;
+  gap: 16px;
+  padding: 24px;
   height: 100%;
 }
 
-.camera-feed {
+/* Left Panel - Surround View */
+.camera-left-panel {
+  width: 600px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg, 24px);
+}
+
+/* Camera Selector Dots */
+.camera-selector {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.camera-dot {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  background: transparent;
+  border: none;
+  cursor: default;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.dot-inner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(128, 128, 128, 0.6);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.camera-dot.active .dot-inner {
+  background: #0066ff;
+  box-shadow: 0 0 16px rgba(0, 102, 255, 0.6);
+}
+
+/* Position dots around the vehicle */
+.camera-dot.top {
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.camera-dot.top-left {
+  top: 25%;
+  left: 5%;
+}
+
+.camera-dot.top-right {
+  top: 25%;
+  right: 5%;
+}
+
+.camera-dot.bottom {
+  bottom: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.camera-dot.bottom-left {
+  bottom: 25%;
+  left: 5%;
+}
+
+.camera-dot.bottom-right {
+  bottom: 25%;
+  right: 5%;
+}
+
+/* Surround View */
+.surround-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 16px);
+}
+
+.surround-view-container {
+  flex: 1;
+  position: relative;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  border-radius: var(--border-radius-lg, 16px);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--color-border-subtle, rgba(255, 255, 255, 0.1));
+}
+
+.vehicle-icon {
+  width: auto;
+  height: 40%;
+  max-width: 60%;
+  object-fit: contain;
+  opacity: 0.9;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.proximity-zones {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: auto;
+}
+
+.zone {
+  position: absolute;
+  transition: all 0.3s ease;
+  opacity: 0;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.zone:hover {
+  opacity: 0.5;
+}
+
+.zone.active {
+  opacity: 1;
+}
+
+.zone.active:hover {
+  opacity: 1;
+}
+
+.zone-front {
+  top: 0;
+  left: 30%;
+  right: 30%;
+  height: 30%;
+  background: linear-gradient(to bottom, rgba(0, 255, 0, 0.2), transparent);
+}
+
+.zone-front-left {
+  top: 0;
+  left: 0;
+  width: 35%;
+  height: 45%;
+  background: linear-gradient(135deg, rgba(255, 255, 0, 0.2), transparent);
+}
+
+.zone-front-right {
+  top: 0;
+  right: 0;
+  width: 35%;
+  height: 45%;
+  background: linear-gradient(225deg, rgba(255, 255, 0, 0.2), transparent);
+}
+
+.zone-rear {
+  bottom: 0;
+  left: 30%;
+  right: 30%;
+  height: 30%;
+  background: linear-gradient(to top, rgba(255, 0, 0, 0.2), transparent);
+}
+
+.zone-rear-left {
+  bottom: 0;
+  left: 0;
+  width: 35%;
+  height: 45%;
+  background: linear-gradient(45deg, rgba(255, 255, 0, 0.2), transparent);
+}
+
+.zone-rear-right {
+  bottom: 0;
+  right: 0;
+  width: 35%;
+  height: 45%;
+  background: linear-gradient(315deg, rgba(255, 255, 0, 0.2), transparent);
+}
+
+.surround-label {
+  font-size: var(--font-size-lg, 18px);
+  font-weight: var(--font-weight-medium, 500);
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.7));
+  text-align: center;
+  margin: 0;
+}
+
+/* Right Panel - Individual Camera View */
+.camera-right-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.individual-camera-view {
   flex: 1;
   position: relative;
   background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
@@ -39,6 +239,7 @@
   justify-content: center;
   gap: var(--spacing-md, 16px);
   opacity: 0.6;
+  z-index: 1;
 }
 
 .camera-label {
@@ -69,55 +270,26 @@
   height: 100%;
 }
 
-/* Camera Controls */
-.camera-controls {
-  display: flex;
-  gap: var(--spacing-md, 16px);
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.camera-button {
-  padding: var(--spacing-md, 16px) var(--spacing-xl, 32px);
-  background: var(--color-bg-secondary, rgba(255, 255, 255, 0.05));
-  border: 2px solid var(--color-border-subtle, rgba(255, 255, 255, 0.1));
-  border-radius: var(--border-radius-md, 12px);
-  color: var(--color-text-primary, rgba(255, 255, 255, 0.9));
-  font-size: var(--font-size-lg, 18px);
-  font-weight: var(--font-weight-medium, 500);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-width: 140px;
-}
-
-.camera-button:hover {
-  background: var(--color-bg-tertiary, rgba(255, 255, 255, 0.1));
-  border-color: var(--color-border-primary, rgba(255, 255, 255, 0.3));
-  transform: translateY(-2px);
-}
-
-.camera-button:active {
-  transform: translateY(0);
-}
-
-.camera-button.active {
-  background: var(--color-primary, #ffffff);
-  color: var(--color-bg-primary, #000000);
-  border-color: var(--color-primary, #ffffff);
-  font-weight: var(--font-weight-semibold, 600);
-}
-
 /* Responsive Adjustments */
 @media (max-width: 1200px) {
   .camera-content {
+    flex-direction: column;
     padding: var(--spacing-lg, 24px);
     gap: var(--spacing-lg, 24px);
   }
 
-  .camera-button {
-    padding: var(--spacing-sm, 12px) var(--spacing-lg, 24px);
-    font-size: var(--font-size-md, 16px);
-    min-width: 120px;
+  .camera-selector {
+    max-height: 200px;
+  }
+
+  .camera-dot {
+    width: 52px;
+    height: 52px;
+  }
+
+  .dot-inner {
+    width: 12px;
+    height: 12px;
   }
 
   .camera-label {
@@ -127,32 +299,30 @@
   .camera-status {
     font-size: var(--font-size-sm, 14px);
   }
+
+  .vehicle-icon {
+    height: 35%;
+    max-width: 50%;
+  }
 }
 
 /* Dark Theme Specific */
-[data-theme="dark"] .camera-feed {
+[data-theme="dark"] .surround-view-container,
+[data-theme="dark"] .individual-camera-view {
   background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
 }
 
 /* Light Theme Specific */
-[data-theme="light"] .camera-feed {
+[data-theme="light"] .surround-view-container,
+[data-theme="light"] .individual-camera-view {
   background: linear-gradient(135deg, #e0e0e0 0%, #f5f5f5 100%);
 }
 
-[data-theme="light"] .camera-button {
-  background: rgba(0, 0, 0, 0.05);
-  border-color: rgba(0, 0, 0, 0.1);
-  color: rgba(0, 0, 0, 0.9);
+[data-theme="light"] .dot-inner {
+  background: rgba(100, 100, 100, 0.5);
 }
 
-[data-theme="light"] .camera-button:hover {
-  background: rgba(0, 0, 0, 0.1);
-  border-color: rgba(0, 0, 0, 0.3);
-}
-
-[data-theme="light"] .camera-button.active {
-  background: #000000;
-  color: #ffffff;
-  border-color: #000000;
+[data-theme="light"] .camera-dot.active .dot-inner {
+  background: #0066ff;
 }
 

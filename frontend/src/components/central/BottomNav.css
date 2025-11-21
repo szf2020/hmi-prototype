@@ -139,6 +139,7 @@
   min-width: var(--spacing-64, 64px);
   text-align: center;
   user-select: none;
+  width: var(--spacing-64, 64px);
 }
 
 /* AI Button */
@@ -164,7 +165,7 @@
   inset: 0;
   background: linear-gradient(45deg, #609EEC 0%, #4357C9 31%, #8B32C1 67%, #C392E1 100%);
   border-radius: var(--borderRadius-16, 16px);
-  opacity: 0.5;
+  opacity: 0.8;
   transition: opacity 0.3s ease;
   z-index: 0;
 }
@@ -174,7 +175,7 @@
 }
 
 .ai-button:hover::before {
-  opacity: 0.7;
+  /* opacity: 0.7; */
 }
 
 .ai-button:active {
