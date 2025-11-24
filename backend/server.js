@@ -7,7 +7,8 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: true, // Allow all origins in development (localhost + network)
+    credentials: true,
     methods: ["GET", "POST"]
   }
 });
@@ -148,9 +149,12 @@ app.get('/health', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3001;
+const HOST = '0.0.0.0'; // Listen on all network interfaces
 
-httpServer.listen(PORT, () => {
-  console.log(`🚗 HMI Backend Server running on port ${PORT}`);
+httpServer.listen(PORT, HOST, () => {
+  console.log(`🚗 HMI Backend Server running on:`);
+  console.log(`   ➜ Local:    http://localhost:${PORT}`);
+  console.log(`   ➜ Network:  Use your local IP address with port ${PORT}`);
   console.log(`📡 WebSocket server ready for connections`);
 });
 

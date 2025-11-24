@@ -30,7 +30,7 @@ function CentralDisplay() {
               className="home-vehicle-image"
             />
           </div>
-          <WidgetsContainer />
+          <WidgetsContainer setActiveView={setActiveView} />
         </div>
       )}
       
