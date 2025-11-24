@@ -19,8 +19,8 @@ function VehicleModelWithFile({ modelPath = '/models/vehicle.glb' }) {
       const center = box.getCenter(new THREE.Vector3());
       const size = box.getSize(new THREE.Vector3());
       
-      // Center the model
-      meshRef.current.position.x = -center.x;
+      // Center the model and apply X offset to shift it right
+      meshRef.current.position.x = -center.x + MODEL_X_OFFSET;
       meshRef.current.position.y = -center.y;
       meshRef.current.position.z = -center.z;
       
@@ -56,8 +56,8 @@ function VehicleModelFallback() {
       const box = new THREE.Box3().setFromObject(meshRef.current);
       const center = box.getCenter(new THREE.Vector3());
       
-      // Center the model
-      meshRef.current.position.x = -center.x;
+      // Center the model and apply X offset to shift it right
+      meshRef.current.position.x = -center.x + MODEL_X_OFFSET;
       meshRef.current.position.y = -center.y;
       meshRef.current.position.z = -center.z;
       
@@ -154,9 +154,12 @@ function VehicleModel({ modelPath = '/models/vehicle.glb' }) {
   );
 }
 
-const DEFAULT_DISTANCE = 3.5;
-const DEFAULT_AZIMUTH = Math.PI / 4 ; // -30deg for a slight angle
+const DEFAULT_DISTANCE = 3.8;
+const DEFAULT_AZIMUTH = Math.PI / 4.5 ; // -30deg for a slight angle
 const DEFAULT_POLAR = Math.PI / 2; // 45deg from "up" (down from y axis)
+// Offset to shift model 128px to the right (converted to 3D units)
+// Approximate conversion: with FOV 60 and distance 3.5, ~128px ≈ 0.5 units
+const MODEL_X_OFFSET = 0.4; // Shift model to the right in 3D space
 
 function Vehicle3D() {
   const controlsRef = useRef();
@@ -188,7 +191,8 @@ function Vehicle3D() {
         gl={{ antialias: true, alpha: true }}
         onCreated={(state) => {
           state.gl.setClearColor('#000000', 0);
-          state.camera.lookAt(0, 0, 0);
+          // Look at offset position to match model shift
+          state.camera.lookAt(MODEL_X_OFFSET, 0, 0);
         }}
       >
         {/* Lighting */}
@@ -214,7 +218,7 @@ function Vehicle3D() {
           minPolarAngle={Math.PI / 6}
           maxPolarAngle={Math.PI / 2.2}
           autoRotate={false}
-          target={[0, 0, 0]}
+          target={[MODEL_X_OFFSET, 0, 0]}
           // These control the startup view:
           defaultPolarAngle={DEFAULT_POLAR}
           defaultAzimuthAngle={DEFAULT_AZIMUTH}
