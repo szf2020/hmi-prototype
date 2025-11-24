@@ -112,26 +112,16 @@
   color: var(--onSurface-inactive);
 }
 
-/* Scrollbar Styling */
+/* Hide Scrollbar (but keep scroll functionality) */
 .widgets-container::-webkit-scrollbar,
 .widgets-scroll-area::-webkit-scrollbar {
-  width: 6px;
+  display: none;
 }
 
-.widgets-container::-webkit-scrollbar-track,
-.widgets-scroll-area::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.widgets-container::-webkit-scrollbar-thumb,
-.widgets-scroll-area::-webkit-scrollbar-thumb {
-  background: var(--surface-secondary-enabled);
-  border-radius: 3px;
-}
-
-.widgets-container::-webkit-scrollbar-thumb:hover,
-.widgets-scroll-area::-webkit-scrollbar-thumb:hover {
-  background: var(--surface-primary-enabled);
+.widgets-container,
+.widgets-scroll-area {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
 }
 
 /* Music Widget Styles */
@@ -141,15 +131,22 @@
 
 .music-widget-content {
   display: flex;
+  flex-direction: column;
   gap: var(--spacing-large, 24px);
   width: 100%;
   height: 100%;
 }
 
+.music-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-medium, 16px);
+}
+
 .music-album-cover {
   flex-shrink: 0;
-  width: 196px;
-  height: 196px;
+  width: 80px;
+  height: 80px;
   border-radius: var(--border-radius-medium, 12px);
   overflow: hidden;
   background: var(--surface-secondary-enabled);
@@ -161,28 +158,25 @@
   object-fit: cover;
 }
 
-.music-info {
-  flex: 1;
+.music-track-info {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: var(--spacing-xxsmall, 4px);
   min-width: 0;
 }
 
 .music-title {
   color: var(--onSurface-enabled);
   margin: 0;
-  margin-top: var(--spacing-small, 12px);
 }
 
 .music-artist {
   color: var(--onSurface-inactive);
   margin: 0;
-  margin-top: var(--spacing-xxsmall, 4px);
 }
 
 .music-progress-container {
-  margin: var(--spacing-medium, 16px) 0;
+  width: 100%;
 }
 
 .music-progress-bar {
@@ -205,6 +199,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-small, 12px);
+  width: 100%;
   margin-top: auto;
 }
 

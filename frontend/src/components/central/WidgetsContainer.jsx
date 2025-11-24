@@ -58,32 +58,35 @@ const WidgetsContainer = ({ setActiveView }) => {
           {/* Widget Card 1 - Music Player */}
           <Card variant="elevated" className="widget-card music-widget">
             <div className="music-widget-content">
-              <div className="music-album-cover">
-                <img 
-                  src="https://images.unsplash.com/photo-1530549387789-4c1017266635?w=300&h=300&fit=crop" 
-                  alt="Album Cover"
-                  className="album-image"
-                />
-              </div>
-              <div className="music-info">
-                <Typography variant="headline-medium" className="music-title">
-                  Recto Verso
-                </Typography>
-                <Typography variant="body-large" className="music-artist">
-                  Paradis
-                </Typography>
-                
-                <div className="music-progress-container">
-                  <div className="music-progress-bar">
-                    <div className="music-progress-fill" style={{ width: '48%' }}></div>
-                  </div>
+              <div className="music-header">
+                <div className="music-album-cover">
+                  <img 
+                    src="https://images.unsplash.com/photo-1530549387789-4c1017266635?w=300&h=300&fit=crop" 
+                    alt="Album Cover"
+                    className="album-image"
+                  />
                 </div>
+                <div className="music-track-info">
+                  <Typography variant="headline-medium" className="music-title">
+                    Recto Verso
+                  </Typography>
+                  <Typography variant="body-large" className="music-artist">
+                    Paradis
+                  </Typography>
+                </div>
+              </div>
+              
+              <div className="music-progress-container">
+                <div className="music-progress-bar">
+                  <div className="music-progress-fill" style={{ width: '48%' }}></div>
+                </div>
+              </div>
 
-                <div className="music-controls">
+              <div className="music-controls">
                   <IconButton
                     icon={
-                      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                        <path d="M24 42L20.55 38.85C11.4 30.48 5.25 24.84 5.25 17.85C5.25 12.21 9.66 7.8 15.3 7.8C18.54 7.8 21.66 9.36 24 11.82C26.34 9.36 29.46 7.8 32.7 7.8C38.34 7.8 42.75 12.21 42.75 17.85C42.75 24.84 36.6 30.48 27.45 38.85L24 42Z" stroke="currentColor" strokeWidth="2.5" fill="none"/>
+                      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3.33325 15.0206C3.33325 22.1998 9.17825 29.2307 18.6869 35.2451C19.0681 35.4991 19.6399 35.7534 19.9999 35.7534C20.3811 35.7534 20.9317 35.4991 21.3129 35.2451C30.8216 29.2307 36.6666 22.1998 36.6666 15.0206C36.6666 9.04854 32.5582 4.81305 27.0943 4.81305C23.9602 4.81305 21.5458 6.23194 19.9999 8.39204C18.4752 6.25312 16.0397 4.81305 12.9055 4.81305C7.44169 4.81305 3.33325 9.04854 3.33325 15.0206ZM6.38281 15.0206C6.38281 10.7216 9.15707 7.86262 12.8843 7.86262C16.0186 7.86262 17.7128 9.83212 18.7505 11.3357C19.2587 12.0769 19.5764 12.2887 19.9999 12.2887C20.4447 12.2887 20.6988 12.0558 21.2494 11.3357C22.3719 9.87447 24.0025 7.86262 27.1368 7.86262C30.864 7.86262 33.617 10.7216 33.617 15.0206C33.617 21.1621 27.0732 27.8753 20.3811 32.3225C20.1905 32.4496 20.0635 32.5343 19.9999 32.5343C19.9364 32.5343 19.8093 32.4496 19.6399 32.3225C12.9266 27.8753 6.38281 21.1621 6.38281 15.0206Z" fill="currentColor"/>
                       </svg>
                     }
                     label="Like"
@@ -92,8 +95,8 @@ const WidgetsContainer = ({ setActiveView }) => {
                   
                   <IconButton
                     icon={
-                      <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
-                        <path d="M14 14V42M42 28L22 14V42L42 28Z" fill="currentColor"/>
+                      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M34.9062 9.83402L34.9062 30.0571C34.9062 31.5767 34.0333 32.288 32.9825 32.288C32.5299 32.288 32.0449 32.1586 31.5761 31.8838L14.6023 21.9905C13.6647 21.4571 13.1798 21.0206 12.9858 20.471L12.9858 30.041C12.9858 31.4635 12.2583 32.2071 10.8358 32.2071L7.16617 32.2071C5.7436 32.2071 4.99999 31.5282 4.99999 30.041L4.99999 9.85019C4.99999 8.42762 5.7436 7.68401 7.16617 7.68401L10.8357 7.68401C12.2583 7.68401 12.9858 8.42762 12.9858 9.85019L12.9858 19.404C13.1798 18.8706 13.6647 18.4341 14.6023 17.8845L31.5761 7.99115C32.0449 7.7325 32.5299 7.58701 32.9825 7.58701C34.0333 7.58701 34.9062 8.31446 34.9062 9.83402Z" fill="currentColor"/>
                       </svg>
                     }
                     label="Previous"
@@ -102,9 +105,8 @@ const WidgetsContainer = ({ setActiveView }) => {
                   
                   <IconButton
                     icon={
-                      <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
-                        <rect x="18" y="14" width="6" height="28" rx="2" fill="currentColor"/>
-                        <rect x="32" y="14" width="6" height="28" rx="2" fill="currentColor"/>
+                      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10.877 35C9.21303 35 8.33325 34.1657 8.33325 32.5695V7.41233C8.33325 5.8162 9.21303 5 10.877 5H15.2376C16.9016 5 17.7813 5.74365 17.7813 7.41233V32.5695C17.7813 34.1657 16.9016 35 15.2376 35H10.877ZM24.7813 35C23.0983 35 22.2185 34.1657 22.2185 32.5695V7.41233C22.2185 5.8162 23.0983 5 24.7813 5H29.1229C30.8059 5 31.6666 5.74365 31.6666 7.41233V32.5695C31.6666 34.1657 30.8059 35 29.1229 35H24.7813Z" fill="currentColor"/>
                       </svg>
                     }
                     label="Pause"
@@ -113,8 +115,8 @@ const WidgetsContainer = ({ setActiveView }) => {
                   
                   <IconButton
                     icon={
-                      <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
-                        <path d="M42 14V42M14 28L34 42V14L14 28Z" fill="currentColor"/>
+                      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 30.041V9.81788C5 8.29832 5.87294 7.58704 6.9237 7.58704C7.37634 7.58704 7.8613 7.71636 8.3301 7.99117L25.3039 17.8845C26.2415 18.418 26.7265 18.8544 26.9205 19.404V9.83405C26.9205 8.41148 27.6479 7.66786 29.0705 7.66786H32.7401C34.1626 7.66786 34.9063 8.34682 34.9063 9.83405V30.0248C34.9063 31.4474 34.1626 32.191 32.7401 32.191H29.0705C27.6479 32.191 26.9205 31.4474 26.9205 30.0248V20.471C26.7265 21.0044 26.2415 21.4409 25.3039 21.9905L8.3301 31.8839C7.8613 32.1425 7.37634 32.288 6.9237 32.288C5.87294 32.288 5 31.5605 5 30.041Z" fill="currentColor"/>
                       </svg>
                     }
                     label="Next"
@@ -123,14 +125,13 @@ const WidgetsContainer = ({ setActiveView }) => {
                   
                   <IconButton
                     icon={
-                      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                        <path d="M36 10.5L42 16.5L36 22.5M36 25.5L42 31.5L36 37.5M42 16.5H33C28.05 16.5 24 20.55 24 25.5C24 30.45 28.05 34.5 33 34.5H42M6 16.5H15C19.95 16.5 24 20.55 24 25.5M24 25.5C24 30.45 19.95 34.5 15 34.5H6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3.33325 27.1427C3.33325 26.4207 3.88198 25.9442 4.66174 25.9442H8.02629C9.49918 25.9442 10.4955 25.4099 11.7518 23.9515L15.3907 19.6916L11.7518 15.4462C10.51 13.9878 9.51362 13.4535 8.02629 13.4535H4.66174C3.88198 13.4535 3.33325 12.9625 3.33325 12.255C3.33325 11.533 3.86754 11.0564 4.66174 11.0564H7.95409C10.3511 11.0564 11.723 11.7351 13.4702 13.7423L16.9792 17.8433L20.4881 13.7423C22.2209 11.7207 23.6072 11.042 26.0187 11.042H29.0366V7.56194C29.0366 6.98434 29.3688 6.66666 29.9608 6.66666C30.2352 6.66666 30.4951 6.7533 30.7117 6.92658L36.1701 11.4608C36.6321 11.8651 36.6321 12.4571 36.1701 12.8326L30.7117 17.3523C30.4951 17.5256 30.2352 17.6267 29.9608 17.6267C29.3688 17.6267 29.0366 17.2946 29.0366 16.717V13.4535H26.0909C24.5024 13.4535 23.4628 13.9878 22.2209 15.4318L18.5676 19.6916L22.2209 23.9515C23.4628 25.4099 24.5024 25.9442 26.0909 25.9442H29.0366V22.7674C29.0366 22.1898 29.3688 21.8576 29.9608 21.8576C30.2352 21.8576 30.4951 21.9587 30.7117 22.132L36.1701 26.6662C36.6321 27.0705 36.6321 27.6481 36.1701 28.038L30.7117 32.5578C30.4951 32.731 30.2352 32.8177 29.9608 32.8177C29.3688 32.8177 29.0366 32.5 29.0366 31.9224V28.3413H26.0187C23.6072 28.3413 22.2209 27.6626 20.4881 25.6554L16.9792 21.5544L13.4702 25.641C11.723 27.6626 10.3511 28.3413 7.95409 28.3413H4.66174C3.86754 28.3413 3.33325 27.8647 3.33325 27.1427Z" fill="currentColor"/>
                       </svg>
                     }
                     label="Shuffle"
                     className="music-control-btn"
                   />
-                </div>
               </div>
             </div>
           </Card>
