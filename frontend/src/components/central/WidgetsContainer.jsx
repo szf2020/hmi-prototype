@@ -70,7 +70,7 @@ const WidgetsContainer = ({ setActiveView }) => {
                   <Typography variant="headline-medium" className="music-title">
                     Recto Verso
                   </Typography>
-                  <Typography variant="body-large" className="music-artist">
+                  <Typography variant="body-medium" className="music-artist">
                     Paradis
                   </Typography>
                 </div>

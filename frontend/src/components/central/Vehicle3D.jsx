@@ -466,7 +466,7 @@ function Vehicle3D() {
           // Look at offset position to match model shift
           state.camera.lookAt(MODEL_X_OFFSET, 0, 0);
           // Add exponential fog for dramatic depth blur effect
-          state.scene.fog = new THREE.FogExp2('rgb(0, 0, 0)', 0.04);
+          state.scene.fog = new THREE.FogExp2('rgb(0, 0, 0)', 0.05);
         }}
       >
         {/* Enhanced Lighting Setup - Much Brighter */}
