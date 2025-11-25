@@ -4,6 +4,7 @@
   position: relative;
   touch-action: none; /* Prevent default touch behaviors */
   cursor: grab;
+  overflow: hidden; /* Ensure gradient mask stays within bounds */
 }
 
 .vehicle-3d-container:active {
@@ -15,7 +16,44 @@
   width: 100% !important;
   height: 100% !important;
   display: block;
+  mask-image: 
+    radial-gradient(
+      ellipse 70% 70% at center,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(0, 0, 0, 1) 55%,
+      rgba(0, 0, 0, 0.7) 75%,
+      rgba(0, 0, 0, 0.3) 95%,
+      rgba(0, 0, 0, 0) 100%
+    ),
+    linear-gradient(
+      to right,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(0, 0, 0, 1) 60%,
+      rgba(0, 0, 0, 0.8) 75%,
+      rgba(0, 0, 0, 0.4) 85%,
+      rgba(0, 0, 0, 0) 100%
+    );
+  -webkit-mask-image: 
+    radial-gradient(
+      ellipse 70% 70% at center,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(0, 0, 0, 1) 55%,
+      rgba(0, 0, 0, 0.7) 75%,
+      rgba(0, 0, 0, 0.3) 95%,
+      rgba(0, 0, 0, 0) 100%
+    ),
+    linear-gradient(
+      to right,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(0, 0, 0, 1) 00%,
+      rgba(0, 0, 0, 0.8) 80%,
+      rgba(0, 0, 0, 0.4) 95%,
+      rgba(0, 0, 0, 0) 100%
+    );
+  mask-composite: intersect;
+  -webkit-mask-composite: source-in;
 }
+
 
 /* Tailgate Button Overlay */
 .tailgate-button-overlay {

@@ -5,6 +5,96 @@ import * as THREE from 'three';
 import Button from '../../design-system/components/Button/Button';
 import './Vehicle3D.css';
 
+// 3D Background - Ground Plane that pans with the car
+function GroundPlane() {
+  const meshRef = useRef();
+  
+  // Create bumpy geometry using useMemo
+  const bumpyGeometry = useMemo(() => {
+    const geometry = new THREE.PlaneGeometry(50, 50, 100, 100);
+    const positions = geometry.attributes.position.array;
+    
+    // Add bumpiness using noise-like displacement
+    for (let i = 0; i < positions.length; i += 3) {
+      const x = positions[i];
+      const z = positions[i + 1]; // Y in plane geometry becomes Z after rotation
+      
+      // Create bumpy surface using multiple sine waves for natural variation
+      const bumpHeight = 0.1;
+      const bump1 = Math.sin(x * 0.3) * Math.cos(z * 0.3) * bumpHeight;
+      const bump2 = Math.sin(x * 0.8) * Math.cos(z * 0.8) * bumpHeight * 0.8;
+      const bump3 = Math.sin(x * 1.5) * Math.cos(z * 1.5) * bumpHeight * 0.25;
+      
+      positions[i + 2] = bump1 + bump2 + bump3; // Modify Z position (height after rotation)
+    }
+    
+    geometry.attributes.position.needsUpdate = true;
+    geometry.computeVertexNormals(); // Recalculate normals for proper lighting
+    
+    return geometry;
+  }, []);
+  
+  return (
+    <mesh 
+      ref={meshRef} 
+      rotation={[-Math.PI / 2, 0, 0]} 
+      position={[MODEL_X_OFFSET, -0.75, 0]}
+      receiveShadow
+      geometry={bumpyGeometry}
+    >
+      <meshStandardMaterial 
+        color="#1C1F23"
+        roughness={0.8}
+        metalness={0.1}
+      />
+    </mesh>
+  );
+}
+
+// Grid helper for depth perception
+function GridHelper() {
+  return (
+    <gridHelper 
+      args={[50, 50, '#2a2a3e', '#1a1a2e']} 
+      position={[MODEL_X_OFFSET, -1.19, 0]}
+    />
+  );
+}
+
+// Background sphere for environment
+function BackgroundSphere() {
+  const gradientTexture = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    
+    // Create vertical gradient from top to bottom
+    const gradient = ctx.createLinearGradient(0, 0, 0, 512);
+    gradient.addColorStop(0, '#000');    // Top - white
+    gradient.addColorStop(0.3, '#000');  // Mid - white
+    gradient.addColorStop(1, '#F69F58');    // Bottom - white
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 512, 512);
+    
+    const texture = new THREE.CanvasTexture(canvas);
+    return texture;
+  }, []);
+  
+  return (
+    <mesh>
+      <sphereGeometry args={[100, 32, 32]} />
+      <meshBasicMaterial 
+        map={gradientTexture}
+        side={THREE.BackSide}
+        transparent={true}
+        opacity={0.8}
+      />
+    </mesh>
+  );
+}
+
 // Component with 3D model loader
 function VehicleModelWithFile({ modelPath = '/models/vehicle.glb', onPositionUpdate, onRoofPositionUpdate }) {
   const meshRef = useRef();
@@ -29,7 +119,7 @@ function VehicleModelWithFile({ modelPath = '/models/vehicle.glb', onPositionUpd
           roughness: 0.4, // Lower roughness for more reflectivity and brightness
           envMapIntensity: 0.7, // Reduced to minimize warm tones from environment map
           sheen: 0.5, // Enable sheen for additional reflectivity
-          sheenColor: '#fff', //  Tint for the reflective shine (blue-purple)
+          sheenColor: 'rgb(255, 255, 255)', //  Tint for the reflective shine (blue-purple)
           sheenRoughness: 0.35, // Smoother sheen for more brightness
           iridescence: 0, // No iridescence effect
         });
@@ -375,10 +465,12 @@ function Vehicle3D() {
           state.gl.setClearColor('#000000', 0);
           // Look at offset position to match model shift
           state.camera.lookAt(MODEL_X_OFFSET, 0, 0);
+          // Add exponential fog for dramatic depth blur effect
+          state.scene.fog = new THREE.FogExp2('rgb(0, 0, 0)', 0.04);
         }}
       >
         {/* Enhanced Lighting Setup - Much Brighter */}
-        <ambientLight intensity={2.0} />
+        <ambientLight intensity={2.0} color="rgb(188, 217, 255)"/>
         
         {/* Main directional light (sun) - blue */}
         <directionalLight 
@@ -396,13 +488,13 @@ function Vehicle3D() {
         />
         
         {/* Fill light from opposite side - blue */}
-        <directionalLight position={[-5, 3, -5]} intensity={2.0} color="#EBEFFF" />
+        <directionalLight position={[-5, 3, -5]} intensity={5.0} color="rgb(87, 96, 131)" />
         
         {/* Rim light for edge definition with blue */}
         <pointLight position={[0, 5, -8]} intensity={3.0} color="#F3EAF9" />
         
         {/* Accent light from above with blue */}
-        <pointLight position={[0, 10, 0]} intensity={2.5} color="#fff" />
+        <pointLight position={[0, 10, 0]} intensity={2.5} color="#F3EAF9" />
         
         {/* Additional blue fill light */}
         <pointLight position={[-3, 4, 3]} intensity={2.0} color="#3a80d2" />
@@ -411,6 +503,13 @@ function Vehicle3D() {
         <pointLight position={[3, 4, 3]} intensity={1.8} color="#F3EAF9" />
         
         {/* Environment removed to prevent warm yellow/orange reflections - using only blue lights for cool tones */}
+
+        {/* Background sphere for environment gradient */}
+        <BackgroundSphere />
+
+        {/* 3D Background - Ground Plane that pans with the car */}
+        <GroundPlane />
+        <GridHelper />
 
         {/* Vehicle Model */}
         <VehicleModel 
