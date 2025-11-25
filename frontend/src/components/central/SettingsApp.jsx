@@ -99,18 +99,26 @@ function SettingsApp() {
     {
       id: 'default',
       path: '/models/vehicle.glb',
-      label: 'Default Vehicle',
-      description: 'Standard sedan model',
+      label: 'Range Rover',
+      description: 'SUV model',
       icon: '🚗',
       preview: '/models/vehicle.glb'
     },
     {
       id: 'dodge',
       path: '/models/dodge.glb',
-      label: 'Dodge',
-      description: 'Dodge vehicle model',
+      label: '1968 Dodge Charger',
+      description: 'Mid Engine Hellacious F9',
       icon: '🚙',
       preview: '/models/dodge.glb'
+    },
+    {
+      id: 'military',
+      path: '/models/tpz-fuchs.glb',
+      label: 'Military',
+      description: 'TPz Fuchs armored vehicle',
+      icon: '🪖',
+      preview: '/models/tpz-fuchs.glb'
     },
     {
       id: 'sports',

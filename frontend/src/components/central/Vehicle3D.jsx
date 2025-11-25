@@ -43,28 +43,39 @@ const MODEL_SCALE_CONFIG = {
   '/models/vehicle.glb': {
     targetSize: 4.0, // Original default vehicle - smaller size
     positionOffset: { x: 0, y: 0, z: 0 }, // No offset
+    rotation: { x: 0, y: 0, z: 0 }, // No rotation
   },
   '/models/dodge.glb': {
     targetSize: 4.5, // Dodge model - larger to be visible
     positionOffset: { x: 0, y: -0.7, z: 0 }, // Adjust these values to reposition
+    rotation: { x: 0, y: 0, z: 0 }, // Default rotation, update as needed
+  },
+  '/models/tpz-fuchs.glb': {
+    targetSize: 4.5, // Military vehicle - armored transport
+    positionOffset: { x: 0, y: 1.9, z: 0 },
+    rotation: { x: 0, y: -90, z: 0 }, // Example: rotated 180 degrees on Y
   },
   '/models/suv.glb': {
     targetSize: 5.0, // Placeholder for future SUV
     positionOffset: { x: 0, y: 0, z: 0 },
+    rotation: { x: 0, y: 0, z: 0 },
   },
   '/models/sports-car.glb': {
     targetSize: 4.5, // Placeholder for future sports car
     positionOffset: { x: 0, y: 0, z: 0 },
+    rotation: { x: 0, y: 0, z: 0 },
   },
   '/models/truck.glb': {
     targetSize: 5.5, // Placeholder for future truck
     positionOffset: { x: 0, y: 0, z: 0 },
+    rotation: { x: 0, y: 0, z: 0 },
   },
 };
 
 // Fallback scale and position if model not in config
 const DEFAULT_TARGET_SIZE = 5.0;
 const DEFAULT_POSITION_OFFSET = { x: 0, y: 0, z: 0 };
+const DEFAULT_ROTATION = { x: 0, y: 0, z: 0 };
 
 const DEFAULT_DISTANCE = 3.8;
 const DEFAULT_AZIMUTH = Math.PI / 4.5;
@@ -173,6 +184,11 @@ function VehicleModelWithFile({ modelPath = '/models/vehicle.glb', onPositionUpd
   
   const { scene } = useGLTF(modelPath);
 
+  // Reset centering flag when model path changes
+  useEffect(() => {
+    centeredRef.current = false;
+  }, [modelPath]);
+
   const clonedScene = useMemo(() => {
     const cloned = scene.clone();
     
@@ -221,11 +237,17 @@ function VehicleModelWithFile({ modelPath = '/models/vehicle.glb', onPositionUpd
       const modelConfig = MODEL_SCALE_CONFIG[modelPath];
       const targetSize = modelConfig ? modelConfig.targetSize : DEFAULT_TARGET_SIZE;
       const positionOffset = modelConfig ? modelConfig.positionOffset : DEFAULT_POSITION_OFFSET;
+      const rotation = modelConfig ? modelConfig.rotation : DEFAULT_ROTATION;
       
       // Center the model and apply custom position offset
       meshRef.current.position.x = -center.x + MODEL_X_OFFSET + positionOffset.x;
       meshRef.current.position.y = -center.y + positionOffset.y;
       meshRef.current.position.z = -center.z + positionOffset.z;
+      
+      // Apply rotation (convert degrees to radians)
+      meshRef.current.rotation.x = (rotation.x * Math.PI) / 180;
+      meshRef.current.rotation.y = (rotation.y * Math.PI) / 180;
+      meshRef.current.rotation.z = (rotation.z * Math.PI) / 180;
       
       // Normalize model size based on configured target
       const maxSize = Math.max(size.x, size.y, size.z);
@@ -282,6 +304,11 @@ function VehicleModelFallback({ onPositionUpdate, onRoofPositionUpdate, quality 
   const centeredRef = useRef(false);
   const boundingBoxRef = useRef(null);
   const preset = QUALITY_PRESETS[quality];
+
+  // Reset centering flag on mount (fallback is simpler, doesn't need modelPath dependency)
+  useEffect(() => {
+    centeredRef.current = false;
+  }, []);
 
   useFrame(() => {
     if (meshRef.current && !centeredRef.current) {
