@@ -3,7 +3,7 @@
   flex-direction: column;
   width: 610px;
   height: 100%;
-  border-radius: var(--border-radius-large, 16px);
+  border-radius: 0;
   overflow-y: auto;
   overflow-x: hidden;
   flex-shrink: 0;
@@ -54,6 +54,54 @@
   line-height: 1.2;
 }
 
+/* Scrollable Area Wrapper with Gradient Overlays */
+.widgets-scroll-wrapper {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Top Gradient Overlay - Fixed on scroll */
+.widgets-scroll-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 40px;
+  background: linear-gradient(
+    to bottom,
+    var(--background-page) 0%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Bottom Gradient Overlay - Fixed on scroll */
+.widgets-scroll-wrapper::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 40px;
+  background: linear-gradient(
+    to top,
+    var(--background-page) 0%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 5;
+}
+
 /* Scrollable Area with Widget Cards */
 .widgets-scroll-area {
   flex: 1;
@@ -62,14 +110,16 @@
   padding: 0;
   width: 100%;
   max-width: 100%;
+  height: 100%;
   box-sizing: border-box;
+  border-radius: 0;
 }
 
 .widgets-grid {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-medium, 16px);
-  padding: var(--spacing-medium, 16px) 0;
+  padding: var(--spacing-40, 40px);
   width: 100%;
   box-sizing: border-box;
   align-items: center;

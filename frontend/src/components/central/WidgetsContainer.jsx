@@ -77,8 +77,9 @@ const WidgetsContainer = ({ setActiveView }) => {
       </div>
 
       {/* Scrollable Area with Widget Cards */}
-      <div className="widgets-scroll-area">
-        <div className="widgets-grid">
+      <div className="widgets-scroll-wrapper">
+        <div className="widgets-scroll-area">
+          <div className="widgets-grid">
           {/* Widget Card 1 - Music Player */}
           <Card variant="elevated" className="widget-card music-widget">
             <div className="music-widget-content">
@@ -257,6 +258,7 @@ const WidgetsContainer = ({ setActiveView }) => {
           <Card variant="elevated" className="widget-card">
             {/* Content will be added later */}
           </Card>
+          </div>
         </div>
       </div>
     </div>
