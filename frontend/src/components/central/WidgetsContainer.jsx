@@ -13,6 +13,30 @@ const WidgetsContainer = ({ setActiveView }) => {
     return () => clearInterval(timer);
   }, []);
 
+  // Generate calendar days for the current month
+  const getCalendarDays = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+    
+    const days = [];
+    
+    // Add empty slots for days before the month starts
+    for (let i = 0; i < startingDayOfWeek; i++) {
+      days.push(null);
+    }
+    
+    // Add all days in the month
+    for (let day = 1; day <= daysInMonth; day++) {
+      days.push(day);
+    }
+    
+    return days;
+  };
+
   const formatTime = (date) => {
     const hours = date.getHours();
     const minutes = date.getMinutes();
@@ -67,7 +91,7 @@ const WidgetsContainer = ({ setActiveView }) => {
                   />
                 </div>
                 <div className="music-track-info">
-                  <Typography variant="headline-medium" className="music-title">
+                  <Typography variant="body-medium" className="music-title">
                     Recto Verso
                   </Typography>
                   <Typography variant="body-medium" className="music-artist">
@@ -139,23 +163,28 @@ const WidgetsContainer = ({ setActiveView }) => {
           {/* Widget Card 2 - Navigation Widget */}
           <Card variant="elevated" className="widget-card navigation-widget">
             <div className="navigation-widget-content">
-              <div className="navigation-widget-info">
-                <IconButton
-                  icon={
-                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                      <path d="M16 2L19.708 12.292L30 16L19.708 19.708L16 30L12.292 19.708L2 16L12.292 12.292L16 2Z" fill="currentColor"/>
+              <div className="navigation-widget-left">
+                <div className="navigation-text-content">
+                  <Typography variant="body-medium" className="navigation-heading">
+                    Feeling hungry?
+                  </Typography>
+                  <Typography variant="body-small" className="navigation-restaurant-name">
+                    Meyhouse
+                  </Typography>
+                  <Typography variant="body-small" className="navigation-details-text">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="navigation-star-icon">
+                      <path d="M6.13723 20.8328C6.53655 21.1323 7.02219 21.0147 7.60497 20.5974L11.9975 17.3988L16.4007 20.5974C16.9727 21.0147 17.4583 21.1323 17.8576 20.8328C18.2461 20.544 18.3217 20.0519 18.0842 19.3886L16.3467 14.2645L20.7823 11.1087C21.3651 10.7129 21.6134 10.2743 21.4515 9.80363C21.3003 9.35434 20.8471 9.12968 20.1348 9.14038L14.6955 9.18318L13.0443 4.02696C12.8284 3.35302 12.4939 3 11.9975 3C11.5118 3 11.1772 3.35302 10.9506 4.02696L9.29937 9.18318L3.86006 9.14038C3.14777 9.12968 2.70529 9.35434 2.5434 9.80363C2.39231 10.2743 2.64053 10.7129 3.21252 11.1087L7.64815 14.2645L5.91059 19.3886C5.67316 20.0519 5.74871 20.544 6.13723 20.8328Z" fill="#335FFF"/>
                     </svg>
-                  }
-                  label="Favorite destination"
-                  className="navigation-star-button"
-                />
+                    5.0 · $$$ · New American
+                  </Typography>
+                </div>
                 <Button 
                   variant="primary"
                   size="small"
                   className="navigation-eta-button"
                   onClick={() => setActiveView('navigation')}
                   icon={
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M12 2L4.5 20.5L12 17L19.5 20.5L12 2Z" fill="currentColor"/>
                     </svg>
                   }
@@ -174,9 +203,49 @@ const WidgetsContainer = ({ setActiveView }) => {
             </div>
           </Card>
 
-          {/* Widget Card 3 */}
-          <Card variant="elevated" className="widget-card">
-            {/* Content will be added later */}
+          {/* Widget Card 3 - Calendar Widget */}
+          <Card variant="elevated" className="widget-card calendar-widget">
+            <div className="calendar-widget-content">
+              <div className="calendar-left">
+                <div className="calendar-day-number">
+                  {currentTime.getDate()}
+                </div>
+                <div className="calendar-info">
+                  <Typography variant="body-small" className="calendar-month">
+                    {currentTime.toLocaleString('en-US', { month: 'long' })}, {currentTime.getFullYear()}
+                  </Typography>
+                  <Typography variant="body-small" className="calendar-weekday-name">
+                    {currentTime.toLocaleString('en-US', { weekday: 'long' })}
+                  </Typography>
+                </div>
+                <div className="calendar-events">
+                  <Typography variant="body-small" className="calendar-events-text">
+                    No events today
+                  </Typography>
+                </div>
+              </div>
+              <div className="calendar-right">
+                <div className="calendar-month-view">
+                  <div className="calendar-weekdays">
+                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+                      <div key={index} className="calendar-weekday">
+                        <Typography variant="body-small">{day}</Typography>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="calendar-days-grid">
+                    {getCalendarDays(currentTime).map((day, index) => (
+                      <div
+                        key={index}
+                        className={`calendar-day ${day === currentTime.getDate() ? 'calendar-day-current' : ''} ${day === null ? 'calendar-day-empty' : ''}`}
+                      >
+                        {day && <Typography variant="body-small">{day}</Typography>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           </Card>
 
           {/* Widget Card 4 */}

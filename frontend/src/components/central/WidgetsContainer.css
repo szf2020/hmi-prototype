@@ -228,32 +228,56 @@
 
 .navigation-widget-content {
   display: flex;
-  flex-direction: column;
-  gap: var(--spacing-medium, 16px);
+  flex-direction: row;
+  gap: var(--spacing-large, 24px);
   width: 100%;
   height: 100%;
 }
 
-.navigation-widget-info {
+.navigation-widget-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+  min-width: 0;
+}
+
+.navigation-text-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-small, 12px);
+}
+
+.navigation-heading {
+  color: var(--onSurface-enabled);
+  margin: 0;
+}
+
+.navigation-restaurant-name {
+  color: var(--onSurface-inactive);
+  margin: 0;
+}
+
+.navigation-details-text {
+  color: var(--onSurface-inactive);
+  margin: 0;
   display: flex;
   align-items: center;
-  gap: var(--spacing-medium, 16px);
+  gap: var(--spacing-xsmall, 8px);
 }
 
-/* Star Icon Button Customization */
-.navigation-star-button.ds-icon-button {
-  background: transparent;
-  color: #4A7EFF;
-}
-
-.navigation-star-button.ds-icon-button:hover {
-  background: rgba(74, 126, 255, 0.1);
-  color: #5A8EFF;
+.navigation-star-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 /* Navigation Button Customization */
 .navigation-eta-button.ds-button {
-  flex: 1;
+  width: 100%;
+  align-self: flex-start;
 }
 
 .navigation-destination-image {
@@ -261,12 +285,144 @@
   border-radius: var(--border-radius-medium, 12px);
   overflow: hidden;
   background: var(--surface-secondary-enabled);
-  min-height: 120px;
+  min-width: 200px;
+  max-width: 200px;
 }
 
 .destination-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* Calendar Widget Styles */
+.calendar-widget {
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+}
+
+.calendar-widget .ds-card__body {
+  padding: var(--spacing-large, 24px) !important;
+}
+
+.calendar-widget-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacing-large, 24px);
+  width: 100%;
+  height: 100%;
+}
+
+.calendar-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--spacing-medium, 16px);
+  flex: 1;
+}
+
+.calendar-day-number {
+  font-family: 'TT Commons Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 120px;
+  font-weight: var(--fontWeight-semibold, 600);
+  line-height: 1;
+  color: var(--onSurface-enabled);
+  letter-spacing: -0.02em;
+}
+
+.calendar-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-xxsmall, 4px);
+}
+
+.calendar-month {
+  color: var(--onSurface-inactive);
+  margin: 0;
+}
+
+.calendar-weekday-name {
+  color: var(--onSurface-inactive);
+  margin: 0;
+}
+
+.calendar-events {
+  margin-top: var(--spacing-small, 12px);
+  padding-top: var(--spacing-small, 12px);
+  border-top: 1px solid var(--elements-divider);
+}
+
+.calendar-events-text {
+  color: var(--onSurface-inactive);
+  margin: 0;
+}
+
+.calendar-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendar-month-view {
+  width: 100%;
+  max-width: 320px;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--spacing-xsmall, 8px);
+  margin-bottom: var(--spacing-small, 12px);
+}
+
+.calendar-weekday {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--onSurface-inactive);
+}
+
+.calendar-weekday .ds-typography {
+  color: var(--onSurface-inactive);
+  margin: 0;
+  font-weight: var(--fontWeight-semibold, 600);
+}
+
+.calendar-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--spacing-xsmall, 8px);
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-small, 8px);
+  transition: background 200ms ease;
+}
+
+.calendar-day .ds-typography {
+  color: var(--onSurface-enabled);
+  margin: 0;
+}
+
+.calendar-day-empty {
+  visibility: hidden;
+}
+
+.calendar-day-current {
+  background: var(--surface-primary-enabled);
+}
+
+.calendar-day-current .ds-typography {
+  color: var(--onSurface-primary-enabled);
+  font-weight: var(--fontWeight-semibold, 600);
 }
 
