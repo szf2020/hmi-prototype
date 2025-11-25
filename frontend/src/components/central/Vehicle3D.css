@@ -16,3 +16,23 @@
   height: 100% !important;
   display: block;
 }
+
+/* Tailgate Button Overlay */
+.tailgate-button-overlay {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  z-index: 10;
+  transition: opacity 200ms ease;
+}
+
+.tailgate-button-overlay button {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.tailgate-button-overlay button svg {
+  width: 32px;
+  height: 32px;
+  display: block;
+}
