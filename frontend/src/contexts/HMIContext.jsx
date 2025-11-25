@@ -34,9 +34,27 @@ export const HMIProvider = ({ children }) => {
     graphicsQuality: 'medium' // low, medium, high
   });
 
+  // Fetch initial state from backend on mount
   useEffect(() => {
-    // Connect to backend
-    const newSocket = io('http://localhost:3000');
+    const fetchInitialState = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/api/state');
+        if (response.ok) {
+          const initialState = await response.json();
+          setState(initialState);
+          console.log('✅ Initial state loaded from backend:', initialState);
+        }
+      } catch (error) {
+        console.warn('⚠️ Could not fetch initial state, using defaults:', error.message);
+      }
+    };
+    
+    fetchInitialState();
+  }, []);
+
+  useEffect(() => {
+    // Connect to backend via WebSocket
+    const newSocket = io('http://localhost:3001');
     
     newSocket.on('connect', () => {
       console.log('Connected to HMI backend');

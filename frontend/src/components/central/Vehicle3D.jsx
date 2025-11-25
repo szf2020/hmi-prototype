@@ -37,6 +37,35 @@ const QUALITY_PRESETS = {
   },
 };
 
+// Model-specific scale and position configurations
+// Adjust the targetSize and position offsets for each model to get the perfect fit
+const MODEL_SCALE_CONFIG = {
+  '/models/vehicle.glb': {
+    targetSize: 4.0, // Original default vehicle - smaller size
+    positionOffset: { x: 0, y: 0, z: 0 }, // No offset
+  },
+  '/models/dodge.glb': {
+    targetSize: 4.5, // Dodge model - larger to be visible
+    positionOffset: { x: 0, y: -0.7, z: 0 }, // Adjust these values to reposition
+  },
+  '/models/suv.glb': {
+    targetSize: 5.0, // Placeholder for future SUV
+    positionOffset: { x: 0, y: 0, z: 0 },
+  },
+  '/models/sports-car.glb': {
+    targetSize: 4.5, // Placeholder for future sports car
+    positionOffset: { x: 0, y: 0, z: 0 },
+  },
+  '/models/truck.glb': {
+    targetSize: 5.5, // Placeholder for future truck
+    positionOffset: { x: 0, y: 0, z: 0 },
+  },
+};
+
+// Fallback scale and position if model not in config
+const DEFAULT_TARGET_SIZE = 5.0;
+const DEFAULT_POSITION_OFFSET = { x: 0, y: 0, z: 0 };
+
 const DEFAULT_DISTANCE = 3.8;
 const DEFAULT_AZIMUTH = Math.PI / 4.5;
 const DEFAULT_POLAR = Math.PI / 2;
@@ -188,15 +217,20 @@ function VehicleModelWithFile({ modelPath = '/models/vehicle.glb', onPositionUpd
       const center = box.getCenter(new THREE.Vector3());
       const size = box.getSize(new THREE.Vector3());
       
-      meshRef.current.position.x = -center.x + MODEL_X_OFFSET;
-      meshRef.current.position.y = -center.y;
-      meshRef.current.position.z = -center.z;
+      // Get model-specific configuration or use defaults
+      const modelConfig = MODEL_SCALE_CONFIG[modelPath];
+      const targetSize = modelConfig ? modelConfig.targetSize : DEFAULT_TARGET_SIZE;
+      const positionOffset = modelConfig ? modelConfig.positionOffset : DEFAULT_POSITION_OFFSET;
       
+      // Center the model and apply custom position offset
+      meshRef.current.position.x = -center.x + MODEL_X_OFFSET + positionOffset.x;
+      meshRef.current.position.y = -center.y + positionOffset.y;
+      meshRef.current.position.z = -center.z + positionOffset.z;
+      
+      // Normalize model size based on configured target
       const maxSize = Math.max(size.x, size.y, size.z);
-      if (maxSize > 6) {
-        const scale = 6 / maxSize;
-        meshRef.current.scale.set(scale, scale, scale);
-      }
+      const scale = targetSize / maxSize;
+      meshRef.current.scale.set(scale, scale, scale);
       
       boundingBoxRef.current = box;
       centeredRef.current = true;
@@ -440,15 +474,20 @@ function SceneLighting({ quality }) {
 
 // Component to track 3D position and convert to screen coordinates
 function PositionTracker({ positionRef, onScreenPositionUpdate }) {
-  const { camera, size } = useThree();
+  const { camera, gl } = useThree();
   
   useFrame(() => {
     if (positionRef.current) {
       const vector = positionRef.current.clone();
       vector.project(camera);
       
-      const x = (vector.x * 0.5 + 0.5) * size.width;
-      const y = (vector.y * -0.5 + 0.5) * size.height;
+      // Get the canvas's actual bounding rectangle on the page
+      const canvas = gl.domElement;
+      const rect = canvas.getBoundingClientRect();
+      
+      // Calculate position relative to the canvas's actual position
+      const x = (vector.x * 0.5 + 0.5) * rect.width;
+      const y = (vector.y * -0.5 + 0.5) * rect.height;
       
       if (vector.z < 1) {
         onScreenPositionUpdate({ x, y, visible: true });
@@ -549,6 +588,7 @@ const Vehicle3D = memo(function Vehicle3D() {
 
         {/* Vehicle Model */}
         <VehicleModel 
+          modelPath={state.selected3DModel || '/models/vehicle.glb'}
           onPositionUpdate={handleVehiclePositionUpdate}
           onRoofPositionUpdate={handleRoofPositionUpdate}
           quality={quality}

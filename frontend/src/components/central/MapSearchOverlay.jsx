@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { Typography } from '../../design-system';
 import './MapSearchOverlay.css';
 
 function MapSearchOverlay({ isOpen, onClose, onSearch }) {
@@ -285,7 +286,7 @@ function MapSearchOverlay({ isOpen, onClose, onSearch }) {
 
         {/* Search Nearby */}
         <div className="section">
-          <h3 className="section-title">SEARCH NEARBY</h3>
+          <Typography variant="label-small" as="h3" className="section-title">SEARCH NEARBY</Typography>
           <div className="category-grid">
             {nearbyCategories.map((category) => (
               <button
@@ -304,7 +305,7 @@ function MapSearchOverlay({ isOpen, onClose, onSearch }) {
 
         {/* Recent Searches */}
         <div className="section">
-          <h3 className="section-title">RECENT</h3>
+          <Typography variant="label-small" as="h3" className="section-title">RECENT</Typography>
           <div className="recent-list">
             {recentSearches.map((place) => (
               <button

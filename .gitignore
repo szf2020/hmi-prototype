@@ -39,3 +39,6 @@ coverage/
 *.tmp
 .cache/
 
+# Backend persistent state
+backend/hmi-state.json
+

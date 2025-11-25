@@ -10,6 +10,10 @@ function SettingsApp() {
     updateState({ graphicsQuality: quality });
   };
 
+  const handleModelChange = (modelPath) => {
+    updateState({ selected3DModel: modelPath });
+  };
+
   const settingsCategories = [
     {
       id: 'graphics',
@@ -88,6 +92,43 @@ function SettingsApp() {
         'Full GPU rendering'
       ],
       icon: '✨'
+    }
+  ];
+
+  const modelOptions = [
+    {
+      id: 'default',
+      path: '/models/vehicle.glb',
+      label: 'Default Vehicle',
+      description: 'Standard sedan model',
+      icon: '🚗',
+      preview: '/models/vehicle.glb'
+    },
+    {
+      id: 'dodge',
+      path: '/models/dodge.glb',
+      label: 'Dodge',
+      description: 'Dodge vehicle model',
+      icon: '🚙',
+      preview: '/models/dodge.glb'
+    },
+    {
+      id: 'sports',
+      path: '/models/sports-car.glb',
+      label: 'Sports Car',
+      description: 'High-performance sports car (coming soon)',
+      icon: '🏎️',
+      preview: '/models/sports-car.glb',
+      disabled: true
+    },
+    {
+      id: 'truck',
+      path: '/models/truck.glb',
+      label: 'Pickup Truck',
+      description: 'Large pickup truck (coming soon)',
+      icon: '🛻',
+      preview: '/models/truck.glb',
+      disabled: true
     }
   ];
 
@@ -189,6 +230,55 @@ function SettingsApp() {
             <p>
               Quality changes apply immediately to the 3D vehicle view. 
               Lower settings are recommended for mobile devices or integrated graphics.
+            </p>
+          </div>
+        </section>
+
+        {/* Vehicle Model Section */}
+        <section className="settings-section">
+          <div className="section-header">
+            <div className="section-icon">🚗</div>
+            <div>
+              <h3 className="section-title">Vehicle Model</h3>
+              <p className="section-description">
+                Choose which 3D vehicle model to display in the Vehicle View
+              </p>
+            </div>
+          </div>
+
+          <div className="model-options">
+            {modelOptions.map((option) => (
+              <button
+                key={option.id}
+                className={`model-option ${state.selected3DModel === option.path ? 'active' : ''} ${option.disabled ? 'disabled' : ''}`}
+                onClick={() => !option.disabled && handleModelChange(option.path)}
+                disabled={option.disabled}
+              >
+                <div className="model-option-header">
+                  <span className="model-icon">{option.icon}</span>
+                  <div className="model-info">
+                    <div className="model-label">
+                      {option.label}
+                      {option.disabled && <span className="coming-soon-badge">Coming Soon</span>}
+                    </div>
+                    <div className="model-description">{option.description}</div>
+                  </div>
+                  <div className="model-radio">
+                    {state.selected3DModel === option.path && !option.disabled && (
+                      <div className="radio-selected" />
+                    )}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          <div className="quality-note">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM11 15H9V13H11V15ZM11 11H9V5H11V11Z" fill="var(--onSurface-inactive, rgba(255, 255, 255, 0.6))"/>
+            </svg>
+            <p>
+              Model changes apply immediately to the 3D Vehicle View. Additional models will be added in future updates.
             </p>
           </div>
         </section>

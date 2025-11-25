@@ -2,6 +2,12 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const httpServer = createServer(app);
@@ -16,8 +22,11 @@ const io = new Server(httpServer, {
 app.use(cors());
 app.use(express.json());
 
-// Store the current state of the HMI system
-const hmiState = {
+// Path to store persistent state
+const STATE_FILE = path.join(__dirname, 'hmi-state.json');
+
+// Default initial state
+const defaultState = {
   // Climate Control
   temperature: 22,
   driverTemp: 70,
@@ -42,8 +51,33 @@ const hmiState = {
   
   // Display Settings
   brightness: 80,
-  theme: 'dark'
+  theme: 'dark',
+  graphicsQuality: 'medium'
 };
+
+// Load state from file or use default
+let hmiState = { ...defaultState };
+try {
+  if (fs.existsSync(STATE_FILE)) {
+    const savedState = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'));
+    hmiState = { ...defaultState, ...savedState };
+    console.log('✅ Loaded saved HMI state from file');
+  } else {
+    console.log('ℹ️  No saved state found, using default values');
+  }
+} catch (error) {
+  console.error('⚠️  Error loading saved state, using defaults:', error.message);
+}
+
+// Save state to file
+function saveState() {
+  try {
+    fs.writeFileSync(STATE_FILE, JSON.stringify(hmiState, null, 2));
+    console.log('💾 State saved to file');
+  } catch (error) {
+    console.error('❌ Error saving state:', error.message);
+  }
+}
 
 // Connected clients by display type
 const connectedDisplays = {
@@ -75,6 +109,9 @@ io.on('connection', (socket) => {
     // Merge updates into current state
     Object.assign(hmiState, updates);
     
+    // Save state to disk
+    saveState();
+    
     // Broadcast to all connected displays
     io.emit('state-update', hmiState);
   });
@@ -85,6 +122,9 @@ io.on('connection', (socket) => {
     
     // Process action and update state accordingly
     handleAction(action);
+    
+    // Save state to disk
+    saveState();
     
     // Broadcast updated state
     io.emit('state-update', hmiState);
@@ -135,6 +175,27 @@ function handleAction(action) {
       console.log('Unknown action:', action.type);
   }
 }
+
+// API endpoint to get current state
+app.get('/api/state', (req, res) => {
+  res.json(hmiState);
+});
+
+// API endpoint to update state via REST
+app.post('/api/state', (req, res) => {
+  try {
+    const updates = req.body;
+    Object.assign(hmiState, updates);
+    saveState();
+    
+    // Broadcast to all WebSocket clients
+    io.emit('state-update', hmiState);
+    
+    res.json({ success: true, state: hmiState });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
 
 // Health check endpoint
 app.get('/health', (req, res) => {
