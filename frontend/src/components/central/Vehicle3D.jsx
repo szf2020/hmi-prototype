@@ -11,7 +11,7 @@ const PARTICLE_SETTINGS = {
   // Particle Density (overrides quality presets if specified)
   density: {
     useQualityPreset: false, // Set to false to use custom density
-    custom: 500, // Custom particle count (used when useQualityPreset is false)
+    custom: 250, // Custom particle count (used when useQualityPreset is false)
   },
   
   // Particle Speed (multipliers for velocity)
