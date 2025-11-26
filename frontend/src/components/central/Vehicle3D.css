@@ -5,6 +5,8 @@
   touch-action: none; /* Prevent default touch behaviors */
   cursor: grab;
   overflow: hidden; /* Ensure gradient mask stays within bounds */
+  contain: layout style paint; /* CSS containment for better performance */
+  will-change: width, height; /* Hint browser about dimension changes */
 }
 
 .vehicle-3d-container:active {
@@ -16,6 +18,8 @@
   width: 100% !important;
   height: 100% !important;
   display: block;
+  object-fit: contain; /* Prevent stretching */
+  will-change: width, height; /* GPU acceleration for smooth resizing */
   mask-image: 
     radial-gradient(
       ellipse 70% 70% at center,

@@ -45,7 +45,7 @@ const PARTICLE_SETTINGS = {
   
   // Behavior
   behavior: {
-    resetHeight: 1,      // Height at which particles reset (for upward motion)
+    resetHeight: 2,      // Height at which particles reset (for upward motion)
     resetHeightMin: -4,  // Minimum height before reset (for downward motion)
     maxDrift: 10,        // Max horizontal distance before reset
     respawnOffset: 2,    // Extra height above/below spawn area for smoother respawn
@@ -78,18 +78,18 @@ const GROUND_SETTINGS = {
     mixBlur: 1.25,           // How much blur mixes with distance
     mixStrength: 5,     // Strength of the reflection mix (0 = no reflection, higher = stronger reflection)
     mirror: 0.2,          // Mirror-like quality (0 = realistic, 1 = perfect mirror)
-    offset: -0.5,          // Reflection vertical offset (0 = at ground level, higher = further below ground)
+    offset: 0,          // Reflection vertical offset (0 = at ground level, higher = further below ground)
   },
   
   // Geometry & Shape
   geometry: {
-    size: 100,              // Ground plane size (width/height in units)
+    size: 60,              // Ground plane size (width/height in units)
     bumpiness: 0.1,        // Height variation for bumpy surface (0 = flat)
     enableBumps: true,     // Toggle bumpy displacement on/off
     
     // Texture-based displacement settings
     textureDisplacement: {
-      enabled: true,            // Enable texture-based height displacement
+      enabled: false,            // Enable texture-based height displacement
       path: '/images/marble_displace.png',  // Path to displacement/heightmap image (can be different from texture)
       strength: 1,           // Displacement intensity (how much texture affects height)
       repeat: { x: 1, y: 1.3 },  // Displacement texture tiling (independent from visual texture)
@@ -100,7 +100,7 @@ const GROUND_SETTINGS = {
   // Position
   position: {
     xOffset: 3,            // Horizontal position (left/right from center)
-    yOffset: -0.26,        // Vertical position (height from origin)
+    yOffset: -0.58,        // Vertical position (height from origin)
   },
 };
 
@@ -619,7 +619,7 @@ function VehicleModelWithFile({ modelPath = '/models/vehicle.glb', onPositionUpd
             envMapIntensity: 0.7,
             sheen: 0.5,
             sheenColor: 'rgb(255, 255, 255)',
-            sheenRoughness: 0.35,
+            sheenRoughness: 0.2,
             iridescence: 0,
           });
         } else {
@@ -891,7 +891,7 @@ function SceneLighting({ quality }) {
   // Full lighting (high quality)
   return (
     <>
-      <ambientLight intensity={2.0} color="rgb(188, 217, 255)"/>
+      <ambientLight intensity={1.0} color="rgb(188, 217, 255)"/>
       <directionalLight 
         position={[5, 8, 5]} 
         intensity={3.0}
@@ -1008,8 +1008,14 @@ const Vehicle3D = memo(function Vehicle3D() {
           position: cameraPosition,
           fov: 60,
         }}
-        gl={{ antialias: quality !== 'low', alpha: true }}
+        gl={{ 
+          antialias: quality !== 'low', 
+          alpha: true,
+          preserveDrawingBuffer: false,
+        }}
         shadows={preset.enableShadows}
+        dpr={[1, 2]}
+        frameloop="always"
         onCreated={(state) => {
           state.gl.setClearColor('#000000', 0);
           state.camera.lookAt(MODEL_X_OFFSET, 0, 0);
