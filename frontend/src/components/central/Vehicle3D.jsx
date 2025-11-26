@@ -57,8 +57,8 @@ const GROUND_SETTINGS = {
   // Texture Configuration
   texture: {
     enabled: true,                      // Enable/disable texture (false = solid color)
-    path: '/images/gravel.png',     // Path to texture image
-    repeat: { x: 10, y: 10 },            // Texture tiling (higher = more repetitions)
+    path: '/images/marble_2.png',     // Path to texture image
+    repeat: { x: 4, y: 4 },            // Texture tiling (higher = more repetitions)
     rotation: 0,                        // Texture rotation in radians (0 = no rotation)
     opacity: 1.0,                       // Texture opacity (0.0 = invisible, 1.0 = fully visible)
   },
