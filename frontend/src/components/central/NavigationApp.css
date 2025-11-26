@@ -107,6 +107,21 @@
   border-color: rgba(255, 165, 0, 0.5);
 }
 
+/* Route loading status indicator */
+.route-loading-status {
+  position: absolute;
+  bottom: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(74, 144, 226, 0.95);
+  border: 1px solid rgba(74, 144, 226, 0.5);
+  border-radius: 24px;
+  padding: 12px 24px;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 16px rgba(74, 144, 226, 0.4);
+}
+
 .status-indicator {
   display: flex;
   align-items: center;
@@ -137,6 +152,30 @@
   height: 100%;
   display: block;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.7));
+}
+
+/* Destination marker */
+.destination-marker {
+  width: 48px;
+  height: 48px;
+  cursor: pointer;
+  animation: pulse-marker 2s ease-in-out infinite;
+}
+
+.destination-marker svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: drop-shadow(0 2px 6px rgba(74, 144, 226, 0.8));
+}
+
+@keyframes pulse-marker {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
 }
 
 /* Customize MapLibre controls for dark theme */

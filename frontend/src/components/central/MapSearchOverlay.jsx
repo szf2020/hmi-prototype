@@ -1,8 +1,8 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Typography } from '../../design-system';
 import './MapSearchOverlay.css';
 
-function MapSearchOverlay({ isOpen, onClose, onSearch }) {
+function MapSearchOverlay({ isOpen, onClose, onSearch, onPanelSideChange }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [panelSide, setPanelSide] = useState('left'); // 'left' or 'right'
   const [isDragging, setIsDragging] = useState(false);
@@ -11,6 +11,13 @@ function MapSearchOverlay({ isOpen, onClose, onSearch }) {
   const dragStartX = useRef(0);
   const dragStartTime = useRef(0);
   const panelRef = useRef(null);
+
+  // Notify parent of initial panel side on mount
+  useEffect(() => {
+    if (onPanelSideChange) {
+      onPanelSideChange(panelSide);
+    }
+  }, []); // Empty dependency array - only run on mount
   
   const shortcuts = [
     { 
@@ -164,8 +171,14 @@ function MapSearchOverlay({ isOpen, onClose, onSearch }) {
       // Snap to opposite side
       if (panelSide === 'left' && endOffset > 0) {
         setPanelSide('right');
+        if (onPanelSideChange) {
+          onPanelSideChange('right');
+        }
       } else if (panelSide === 'right' && endOffset < 0) {
         setPanelSide('left');
+        if (onPanelSideChange) {
+          onPanelSideChange('left');
+        }
       }
     }
     
@@ -279,14 +292,14 @@ function MapSearchOverlay({ isOpen, onClose, onSearch }) {
               onClick={() => handleShortcutClick(shortcut)}
             >
               <span className="shortcut-icon-svg">{shortcut.icon}</span>
-              <span className="shortcut-label">{shortcut.label}</span>
+              <Typography variant="label-small" as="span" className="shortcut-label">{shortcut.label}</Typography>
             </button>
           ))}
         </div>
 
         {/* Search Nearby */}
         <div className="section">
-          <Typography variant="label-small" as="h3" className="section-title">SEARCH NEARBY</Typography>
+          <Typography variant="body-tiny" as="h3" className="section-title">SEARCH NEARBY</Typography>
           <div className="category-grid">
             {nearbyCategories.map((category) => (
               <button
@@ -297,7 +310,9 @@ function MapSearchOverlay({ isOpen, onClose, onSearch }) {
                 <div className="category-icon" style={{ backgroundColor: category.color }}>
                   {category.icon}
                 </div>
-                <span className="category-label">{category.label}</span>
+                <Typography variant="body-small" as="span" className="category-label">
+                  {category.label}
+                </Typography>
               </button>
             ))}
           </div>
@@ -305,7 +320,7 @@ function MapSearchOverlay({ isOpen, onClose, onSearch }) {
 
         {/* Recent Searches */}
         <div className="section">
-          <Typography variant="label-small" as="h3" className="section-title">RECENT</Typography>
+          <Typography variant="body-tiny" as="h3" className="section-title">RECENT</Typography>
           <div className="recent-list">
             {recentSearches.map((place) => (
               <button
@@ -319,8 +334,12 @@ function MapSearchOverlay({ isOpen, onClose, onSearch }) {
                   </svg>
                 </div>
                 <div className="recent-content">
-                  <div className="recent-name">{place.name}</div>
-                  <div className="recent-address">{place.address}</div>
+                  <Typography variant="body-small" as="div" className="recent-name">
+                    {place.name}
+                  </Typography>
+                  <Typography variant="body-tiny" as="div" className="recent-address">
+                    {place.address}
+                  </Typography>
                 </div>
               </button>
             ))}

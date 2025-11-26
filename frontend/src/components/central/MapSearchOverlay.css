@@ -2,18 +2,18 @@
 
 .map-search-overlay {
   position: absolute;
-  top: 8px;
-  left: 8px;
-  bottom: 8px;
+  top: var(--spacing-8);
+  left: var(--spacing-8);
+  bottom: var(--spacing-8);
   width: 420px;
-  background-color: var(--surface-surface-secondary-enabled);
+  background-color: var(--surface-secondary-enabled);
   backdrop-filter: blur(20px);
   z-index: 1000;
   border-radius: var(--borderRadius-16);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
   display: flex;
   flex-direction: column;
-  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.5s var(--motion-easing-standard);
   user-select: none;
   touch-action: pan-y; /* Allow vertical scrolling but capture horizontal */
   will-change: transform; /* Optimize for animation */
@@ -43,17 +43,17 @@
 .drag-handle-indicator {
   width: 64px;
   height: 4px;
-  background-color: var(--color-white-40);
-  border-radius: 2px;
+  background-color: var(--surface-secondary-inactive);
+  border-radius: var(--borderRadius-4);
   transition: background-color 0.2s ease, width 0.2s ease;
 }
 
 .drag-handle:hover .drag-handle-indicator {
-  background-color: var(--color-white-50);
+  background-color: var(--surface-secondary-enabled);
 }
 
 .drag-handle:active .drag-handle-indicator {
-  background-color: var(--color-white-60-inactive);
+  background-color: var(--surface-secondary-selected);
 }
 
 .search-overlay-content {
@@ -75,20 +75,20 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-12);
-  background-color: var(--color-white-10);
-  border: 1px solid var(--color-white-20);
+  background-color: var(--surface-secondary-enabled);
+  border: 1px solid var(--elements-divider);
   border-radius: var(--borderRadius-16);
   padding: var(--spacing-16) var(--spacing-20);
   transition: all 0.2s ease;
 }
 
 .search-input-container:focus-within {
-  background-color: var(--color-white-20);
-  border-color: var(--color-white-30);
+  background-color: var(--surface-secondary-selected);
+  border-color: var(--surface-secondary-inactive);
 }
 
 .search-icon {
-  color: var(--color-white-60-inactive);
+  color: var(--onSurface-primary-inactive);
   flex-shrink: 0;
 }
 
@@ -97,20 +97,22 @@
   background: transparent;
   border: none;
   outline: none;
-  color: var(--color-white-90-default);
+  color: var(--onSurface-primary-enabled);
+  font-family: var(--fontFamily-hmi);
   font-size: var(--fontSize-20);
-  font-weight: var(--fontWeight-regular);
-  letter-spacing: var(--letterSpacing-body-medium);
+  font-weight: var(--fontWeight-semibold);
+  line-height: var(--lineHeight-28);
+  letter-spacing: var(--letterSpacing-normal);
 }
 
 .search-input::placeholder {
-  color: var(--color-white-60-inactive);
+  color: var(--onSurface-primary-inactive);
 }
 
 .close-button {
   background: transparent;
   border: none;
-  color: var(--color-white-60-inactive);
+  color: var(--onSurface-primary-inactive);
   font-size: var(--fontSize-24);
   cursor: pointer;
   padding: var(--spacing-4);
@@ -120,7 +122,7 @@
 }
 
 .close-button:active {
-  background-color: var(--color-white-10);
+  background-color: var(--surface-secondary-enabled);
 }
 
 /* Shortcuts: Home & Work */
@@ -137,30 +139,31 @@
   align-items: center;
   justify-content: center;
   gap: var(--spacing-12);
-  background-color: var(--color-white-10);
-  border: 1px solid var(--color-white-20);
+  background-color: var(--surface-secondary-enabled);
+  border: 1px solid var(--elements-divider);
   border-radius: var(--borderRadius-16);
   padding: var(--spacing-20);
-  color: var(--color-white-90-default);
-  font-size: var(--fontSize-18);
+  color: var(--onSurface-primary-enabled);
+  font-family: var(--fontFamily-hmi);
+  font-size: var(--fontSize-20);
   font-weight: var(--fontWeight-semibold);
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
 .shortcut-button:active {
-  background-color: var(--color-white-20);
+  background-color: var(--surface-secondary-pressed);
 }
 
 .shortcut-icon-svg {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-white-90-default);
+  color: var(--onSurface-primary-enabled);
 }
 
 .shortcut-label {
-  letter-spacing: var(--letterSpacing-label-medium);
+  letter-spacing: var(--letterSpacing-normal);
 }
 
 /* Section */
@@ -169,12 +172,15 @@
   flex-shrink: 0;
 }
 
+
+
 .section-title {
-  color: var(--color-white-60-inactive);
+  color: var(--onSurface-primary-inactive);
+  font-family: var(--fontFamily-hmi);
   font-size: var(--fontSize-14);
   font-weight: var(--fontWeight-semibold);
-  letter-spacing: var(--letterSpacing-label-large);
-  margin-bottom: var(--spacing-16);
+  letter-spacing: var(--letterSpacing-tight);
+  margin-bottom: var(--spacing-8);
   text-transform: uppercase;
 }
 
@@ -183,6 +189,8 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--spacing-12);
+  padding-top: var(--spacing-16);
+  padding-bottom: var(--spacing-16);
 }
 
 .category-button {
@@ -199,7 +207,7 @@
 }
 
 .category-button:active {
-  background-color: var(--color-white-10);
+  background-color: var(--surface-secondary-pressed);
 }
 
 .category-icon {
@@ -214,10 +222,8 @@
 }
 
 .category-label {
-  color: var(--color-white-90-default);
-  font-size: var(--fontSize-16);
-  font-weight: var(--fontWeight-medium);
-  letter-spacing: var(--letterSpacing-label-small);
+  color: var(--onSurface-primary-enabled);
+  /* Typography is handled by the Typography component with body-small variant */
 }
 
 /* Recent List */
@@ -225,14 +231,16 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-12);
+  padding-top: var(--spacing-16);
+  padding-bottom: var(--spacing-16);
 }
 
 .recent-item {
   display: flex;
   align-items: flex-start;
   gap: var(--spacing-16);
-  background-color: var(--color-white-5);
-  border: 1px solid var(--color-white-10);
+  background-color: var(--surface-tertiary-enabled);
+  border: 1px solid var(--elements-divider);
   border-radius: var(--borderRadius-16);
   padding: var(--spacing-16);
   cursor: pointer;
@@ -242,19 +250,19 @@
 }
 
 .recent-item:active {
-  background-color: var(--color-white-10);
+  background-color: var(--surface-secondary-pressed);
 }
 
 .recent-icon {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: var(--color-white-10);
+  background-color: var(--surface-secondary-enabled);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: var(--color-white-60-inactive);
+  color: var(--onSurface-primary-inactive);
 }
 
 .recent-content {
@@ -263,10 +271,8 @@
 }
 
 .recent-name {
-  color: var(--color-white-90-default);
-  font-size: var(--fontSize-16);
-  font-weight: var(--fontWeight-semibold);
-  letter-spacing: var(--letterSpacing-body-small);
+  color: var(--onSurface-primary-enabled);
+  /* Typography handled by Typography component with body-small variant */
   margin-bottom: var(--spacing-4);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -274,10 +280,8 @@
 }
 
 .recent-address {
-  color: var(--color-white-60-inactive);
-  font-size: var(--fontSize-16);
-  font-weight: var(--fontWeight-regular);
-  letter-spacing: var(--letterSpacing-body-tiny);
+  color: var(--onSurface-primary-inactive);
+  /* Typography handled by Typography component with body-tiny variant */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

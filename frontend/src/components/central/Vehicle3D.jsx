@@ -58,7 +58,7 @@ const GROUND_SETTINGS = {
   texture: {
     enabled: true,                      // Enable/disable texture (false = solid color)
     path: '/images/marble_2.png',     // Path to texture image
-    repeat: { x: 6, y: 1 },            // Texture tiling (higher = more repetitions)
+    repeat: { x: 6, y: 2 },            // Texture tiling (higher = more repetitions)
     rotation: 15,                        // Texture rotation in radians (0 = no rotation)
     opacity: 1,                       // Texture opacity (0.0 = invisible, 1.0 = fully visible)
   },
@@ -101,6 +101,37 @@ const GROUND_SETTINGS = {
   position: {
     xOffset: 3,            // Horizontal position (left/right from center)
     yOffset: -0.58,        // Vertical position (height from origin)
+  },
+};
+
+// Vehicle Material Settings - Adjust these to customize the car's appearance
+const VEHICLE_MATERIAL_SETTINGS = {
+  // Base Appearance
+  appearance: {
+    color: 'rgb(100, 100, 100)',         // Base color (hex or rgb) - dark gray by default
+  },
+  
+  // Physical Material (High Quality) - Advanced PBR material with extra properties
+  physical: {
+    metalness: 0.8,        // Metallic property (0 = non-metal, 1 = full metal)
+    roughness: 0.4,        // Surface roughness (0 = mirror smooth, 1 = completely rough)
+    envMapIntensity: 0.1,  // Environment map reflection intensity (0-1+)
+    sheen: 0.5,            // Fabric-like sheen effect (0 = no sheen, 1 = full sheen)
+    sheenColor: 'rgb(234, 248, 255)', // Color of the sheen highlight
+    sheenRoughness: 0.2,   // Roughness of the sheen layer (0 = smooth, 1 = rough)
+    iridescence: 0,        // Rainbow/soap bubble effect (0 = none, 1 = full effect)
+  },
+  
+  // Standard Material (Medium/Low Quality) - Basic PBR material
+  standard: {
+    metalness: 0.9,        // Metallic property (0 = non-metal, 1 = full metal)
+    roughness: 0.4,        // Surface roughness (0 = mirror smooth, 1 = completely rough)
+  },
+  
+  // Shadow Settings
+  shadows: {
+    castShadow: true,      // Whether vehicle casts shadows (uses quality preset if true)
+    receiveShadow: true,   // Whether vehicle receives shadows (uses quality preset if true)
   },
 };
 
@@ -613,20 +644,20 @@ function VehicleModelWithFile({ modelPath = '/models/vehicle.glb', onPositionUpd
         let material;
         if (preset.materialQuality === 'physical') {
           material = new THREE.MeshPhysicalMaterial({
-            color: '#444',
-            metalness: 1,
-            roughness: 0.4,
-            envMapIntensity: 0.7,
-            sheen: 0.5,
-            sheenColor: 'rgb(255, 255, 255)',
-            sheenRoughness: 0.2,
-            iridescence: 0,
+            color: VEHICLE_MATERIAL_SETTINGS.appearance.color,
+            metalness: VEHICLE_MATERIAL_SETTINGS.physical.metalness,
+            roughness: VEHICLE_MATERIAL_SETTINGS.physical.roughness,
+            envMapIntensity: VEHICLE_MATERIAL_SETTINGS.physical.envMapIntensity,
+            sheen: VEHICLE_MATERIAL_SETTINGS.physical.sheen,
+            sheenColor: VEHICLE_MATERIAL_SETTINGS.physical.sheenColor,
+            sheenRoughness: VEHICLE_MATERIAL_SETTINGS.physical.sheenRoughness,
+            iridescence: VEHICLE_MATERIAL_SETTINGS.physical.iridescence,
           });
         } else {
           material = new THREE.MeshStandardMaterial({
-            color: '#444',
-            metalness: 0.9,
-            roughness: 0.4,
+            color: VEHICLE_MATERIAL_SETTINGS.appearance.color,
+            metalness: VEHICLE_MATERIAL_SETTINGS.standard.metalness,
+            roughness: VEHICLE_MATERIAL_SETTINGS.standard.roughness,
           });
         }
         
@@ -634,8 +665,8 @@ function VehicleModelWithFile({ modelPath = '/models/vehicle.glb', onPositionUpd
           ? child.material.map(() => material.clone())
           : material;
         
-        child.castShadow = preset.enableShadows;
-        child.receiveShadow = preset.enableShadows;
+        child.castShadow = preset.enableShadows && VEHICLE_MATERIAL_SETTINGS.shadows.castShadow;
+        child.receiveShadow = preset.enableShadows && VEHICLE_MATERIAL_SETTINGS.shadows.receiveShadow;
       }
     });
     
@@ -770,20 +801,28 @@ function VehicleModelFallback({ onPositionUpdate, onRoofPositionUpdate, quality 
 
   return (
     <group ref={meshRef}>
-      <mesh position={[0, 0, 0]} castShadow={preset.enableShadows} receiveShadow={preset.enableShadows}>
+      <mesh 
+        position={[0, 0, 0]} 
+        castShadow={preset.enableShadows && VEHICLE_MATERIAL_SETTINGS.shadows.castShadow} 
+        receiveShadow={preset.enableShadows && VEHICLE_MATERIAL_SETTINGS.shadows.receiveShadow}
+      >
         <boxGeometry args={[4, 1.2, 2]} />
         <meshStandardMaterial 
-          color="#1a1a1a" 
-          metalness={0.8} 
-          roughness={0.2}
+          color={VEHICLE_MATERIAL_SETTINGS.appearance.color} 
+          metalness={VEHICLE_MATERIAL_SETTINGS.standard.metalness} 
+          roughness={VEHICLE_MATERIAL_SETTINGS.standard.roughness}
         />
       </mesh>
-      <mesh position={[0, 0.8, 0]} castShadow={preset.enableShadows} receiveShadow={preset.enableShadows}>
+      <mesh 
+        position={[0, 0.8, 0]} 
+        castShadow={preset.enableShadows && VEHICLE_MATERIAL_SETTINGS.shadows.castShadow} 
+        receiveShadow={preset.enableShadows && VEHICLE_MATERIAL_SETTINGS.shadows.receiveShadow}
+      >
         <boxGeometry args={[2.5, 0.8, 1.8]} />
         <meshStandardMaterial 
-          color="#2a2a2a" 
-          metalness={0.8} 
-          roughness={0.2}
+          color={VEHICLE_MATERIAL_SETTINGS.appearance.color} 
+          metalness={VEHICLE_MATERIAL_SETTINGS.standard.metalness} 
+          roughness={VEHICLE_MATERIAL_SETTINGS.standard.roughness}
         />
       </mesh>
       {[
@@ -792,9 +831,13 @@ function VehicleModelFallback({ onPositionUpdate, onRoofPositionUpdate, quality 
         [-1.2, -0.6, -1.1],
         [1.2, -0.6, -1.1],
       ].map((pos, i) => (
-        <mesh key={i} position={pos} castShadow={preset.enableShadows}>
+        <mesh key={i} position={pos} castShadow={preset.enableShadows && VEHICLE_MATERIAL_SETTINGS.shadows.castShadow}>
           <cylinderGeometry args={[0.4, 0.4, 0.3, 16]} />
-          <meshStandardMaterial color="#0a0a0a" metalness={0.9} roughness={0.1} />
+          <meshStandardMaterial 
+            color="#0a0a0a" 
+            metalness={VEHICLE_MATERIAL_SETTINGS.standard.metalness} 
+            roughness={VEHICLE_MATERIAL_SETTINGS.standard.roughness}
+          />
         </mesh>
       ))}
     </group>

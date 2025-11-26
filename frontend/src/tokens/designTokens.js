@@ -3729,11 +3729,3 @@ export const designTokens = {
     }
   }
 };
-
-export type TokenType = 'color' | 'spacing' | 'dimension' | 'fontSizes' | 'lineHeights' | 'fontWeights' | 'borderRadius' | 'borderWidth' | 'shadow' | 'textDecoration' | 'textCase' | 'letterSpacing' | 'duration' | 'number' | 'cubicBezier' | 'cubic-bezier' | 'transition' | 'string' | 'fontFamilies' | 'opacity' | 'blur' | 'backdropFilter' | 'typography' | 'outline' | 'text' | 'composition';
-
-export interface Token {
-  value: any;
-  type: TokenType;
-  original?: string;
-}
