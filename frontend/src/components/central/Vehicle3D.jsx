@@ -6,6 +6,93 @@ import Button from '../../design-system/components/Button/Button';
 import { useHMI } from '../../contexts/HMIContext';
 import './Vehicle3D.css';
 
+// Particle System Settings - Adjust these to customize dust effect
+const PARTICLE_SETTINGS = {
+  // Particle Density (overrides quality presets if specified)
+  density: {
+    useQualityPreset: false, // Set to false to use custom density
+    custom: 500, // Custom particle count (used when useQualityPreset is false)
+  },
+  
+  // Particle Speed (multipliers for velocity)
+  speed: {
+    overall: 0.5,        // Global speed multiplier (1.0 = default, 2.0 = twice as fast)
+    horizontal: 0.5,     // X/Z axis drift speed multiplier
+    vertical: 0.2,       // Y axis rise speed multiplier
+  },
+  
+  // Particle Direction Bias
+  direction: {
+    x: 0.0,   // Horizontal bias (-1.0 = left, 0 = random, 1.0 = right)
+    y: 0.5,   // Vertical bias (-1.0 = down, 0 = random, 1.0 = up)
+    z: 0.0,   // Depth bias (-1.0 = backward, 0 = random, 1.0 = forward)
+  },
+  
+  // Particle Appearance
+  appearance: {
+    sizeMin: 0.02,       // Minimum particle size
+    sizeMax: 0.08,       // Maximum particle size
+    opacity: 0.4,        // Overall opacity (0.0 - 1.0)
+    color: 'rgb(109, 135, 194)',    // Particle color (hex or rgb)
+  },
+  
+  // Spawn Area (relative to vehicle center)
+  spawnArea: {
+    width: 15,           // Horizontal spread (X/Z)
+    height: 8,           // Vertical spread (Y)
+    yOffset: -2,         // Starting Y position offset
+  },
+  
+  // Behavior
+  behavior: {
+    resetHeight: 1,      // Height at which particles reset (for upward motion)
+    resetHeightMin: -4,  // Minimum height before reset (for downward motion)
+    maxDrift: 10,        // Max horizontal distance before reset
+    respawnOffset: 2,    // Extra height above/below spawn area for smoother respawn
+  },
+};
+
+// Ground Plane Settings - Adjust these to customize the floor/ground appearance
+const GROUND_SETTINGS = {
+  // Texture Configuration
+  texture: {
+    enabled: true,                      // Enable/disable texture (false = solid color)
+    path: '/images/gravel.png',     // Path to texture image
+    repeat: { x: 10, y: 10 },            // Texture tiling (higher = more repetitions)
+    rotation: 0,                        // Texture rotation in radians (0 = no rotation)
+    opacity: 1.0,                       // Texture opacity (0.0 = invisible, 1.0 = fully visible)
+  },
+  
+  // Material Properties
+  material: {
+    color: 'rgb(39, 40, 44)',      // Base color (white = shows texture as-is)
+    roughness: 0.8,        // Surface roughness (0 = smooth/shiny, 1 = rough/matte)
+    metalness: 0.1,        // Metallic property (0 = non-metal, 1 = full metal)
+  },
+  
+  // Geometry & Shape
+  geometry: {
+    size: 60,              // Ground plane size (width/height in units)
+    bumpiness: 0.12,        // Height variation for bumpy surface (0 = flat)
+    enableBumps: true,     // Toggle bumpy displacement on/off
+    
+    // Texture-based displacement settings
+    textureDisplacement: {
+      enabled: true,            // Enable texture-based height displacement
+      path: '/images/marble.png',  // Path to displacement/heightmap image (can be different from texture)
+      strength: 4,           // Displacement intensity (how much texture affects height)
+      repeat: { x: 0.01, y: 0.03 },  // Displacement texture tiling (independent from visual texture)
+      offset: { x: 0.043, y: -0.0027 },  // Displacement texture offset (0-1 range, shifts the pattern)
+    },
+  },
+  
+  // Position
+  position: {
+    xOffset: 0,            // Horizontal position (left/right from center)
+    yOffset: -0.6,        // Vertical position (height from origin)
+  },
+};
+
 // Quality presets
 const QUALITY_PRESETS = {
   low: {
@@ -16,6 +103,7 @@ const QUALITY_PRESETS = {
     materialQuality: 'standard',
     enableFog: false,
     backgroundSphereSubdivisions: 16,
+    particleCount: 200,
   },
   medium: {
     groundSubdivisions: 50,
@@ -25,6 +113,7 @@ const QUALITY_PRESETS = {
     materialQuality: 'standard',
     enableFog: true,
     backgroundSphereSubdivisions: 24,
+    particleCount: 400,
   },
   high: {
     groundSubdivisions: 100,
@@ -34,6 +123,7 @@ const QUALITY_PRESETS = {
     materialQuality: 'physical',
     enableFog: true,
     backgroundSphereSubdivisions: 32,
+    particleCount: 800,
   },
 };
 
@@ -42,7 +132,7 @@ const QUALITY_PRESETS = {
 const MODEL_SCALE_CONFIG = {
   '/models/vehicle.glb': {
     targetSize: 3.8, // Original default vehicle - smaller size
-    positionOffset: { x: 0, y: 0, z: 0 }, // No offset
+    positionOffset: { x: 0, y: 0.01, z: 0 }, // No offset
     rotation: { x: 0, y: 0, z: 0 }, // No rotation
   },
   '/models/dodge.glb': {
@@ -87,44 +177,167 @@ function GroundPlane({ quality }) {
   const meshRef = useRef();
   const preset = QUALITY_PRESETS[quality];
   
+  // State to track when displacement texture is loaded
+  const [displacementLoaded, setDisplacementLoaded] = useState(false);
+  
+  // Load texture for displacement mapping
+  const displacementTexture = useMemo(() => {
+    if (!GROUND_SETTINGS.geometry.textureDisplacement.enabled) return null;
+    
+    setDisplacementLoaded(false);
+    const loader = new THREE.TextureLoader();
+    const tex = loader.load(
+      GROUND_SETTINGS.geometry.textureDisplacement.path,
+      () => {
+        // onLoad callback
+        setDisplacementLoaded(true);
+      },
+      undefined,
+      (error) => {
+        console.error('Error loading displacement texture:', error);
+      }
+    );
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    
+    return tex;
+  }, []);
+  
   // Create bumpy geometry using useMemo
   const bumpyGeometry = useMemo(() => {
     const subdivisions = preset.groundSubdivisions;
-    const geometry = new THREE.PlaneGeometry(50, 50, subdivisions, subdivisions);
-    const positions = geometry.attributes.position.array;
+    const size = GROUND_SETTINGS.geometry.size;
+    const geometry = new THREE.PlaneGeometry(size, size, subdivisions, subdivisions);
     
-    // Add bumpiness using noise-like displacement
-    for (let i = 0; i < positions.length; i += 3) {
-      const x = positions[i];
-      const z = positions[i + 1];
+    if (GROUND_SETTINGS.geometry.enableBumps) {
+      const positions = geometry.attributes.position.array;
+      const bumpHeight = GROUND_SETTINGS.geometry.bumpiness;
       
-      // Create bumpy surface using multiple sine waves
-      const bumpHeight = 0.1;
-      const bump1 = Math.sin(x * 0.3) * Math.cos(z * 0.3) * bumpHeight;
-      const bump2 = Math.sin(x * 0.8) * Math.cos(z * 0.8) * bumpHeight * 0.8;
-      const bump3 = Math.sin(x * 1.5) * Math.cos(z * 1.5) * bumpHeight * 0.25;
+      // Add bumpiness using noise-like displacement
+      for (let i = 0; i < positions.length; i += 3) {
+        const x = positions[i];
+        const z = positions[i + 1];
+        
+        // Create bumpy surface using multiple sine waves
+        const bump1 = Math.sin(x * 0.3) * Math.cos(z * 0.3) * bumpHeight;
+        const bump2 = Math.sin(x * 0.8) * Math.cos(z * 0.8) * bumpHeight * 0.8;
+        const bump3 = Math.sin(x * 1.5) * Math.cos(z * 1.5) * bumpHeight * 0.25;
+        
+        positions[i + 2] = bump1 + bump2 + bump3;
+      }
       
-      positions[i + 2] = bump1 + bump2 + bump3;
+      geometry.attributes.position.needsUpdate = true;
+      geometry.computeVertexNormals();
     }
-    
-    geometry.attributes.position.needsUpdate = true;
-    geometry.computeVertexNormals();
     
     return geometry;
   }, [preset.groundSubdivisions]);
+  
+  // Apply texture-based displacement after texture loads
+  useEffect(() => {
+    if (!displacementTexture || !GROUND_SETTINGS.geometry.textureDisplacement.enabled) return;
+    if (!meshRef.current) return;
+    if (!displacementLoaded) return;
+    
+    const img = displacementTexture.image;
+    if (!img || !img.complete) return;
+    
+    applyTextureDisplacement();
+    
+    function applyTextureDisplacement() {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+      
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const pixels = imageData.data;
+      
+      const geometry = meshRef.current.geometry;
+      const positions = geometry.attributes.position.array;
+      const strength = GROUND_SETTINGS.geometry.textureDisplacement.strength;
+      const repeatX = GROUND_SETTINGS.geometry.textureDisplacement.repeat.x;
+      const repeatY = GROUND_SETTINGS.geometry.textureDisplacement.repeat.y;
+      const offsetX = GROUND_SETTINGS.geometry.textureDisplacement.offset.x;
+      const offsetY = GROUND_SETTINGS.geometry.textureDisplacement.offset.y;
+      
+      console.log('Applying displacement - strength:', strength, 'repeat:', [repeatX, repeatY], 'offset:', [offsetX, offsetY]);
+      
+      // Apply texture height to each vertex
+      for (let i = 0; i < positions.length; i += 3) {
+        const x = positions[i];
+        const z = positions[i + 1];
+        
+        // Convert world position to UV coordinates (0-1 range)
+        const size = GROUND_SETTINGS.geometry.size;
+        let u = ((x + size / 2) / size) * repeatX + offsetX;
+        let v = ((z + size / 2) / size) * repeatY + offsetY;
+        
+        // Wrap UV to 0-1 range
+        u = u - Math.floor(u);
+        v = v - Math.floor(v);
+        
+        // Sample texture at this position
+        const px = Math.floor(u * (canvas.width - 1));
+        const py = Math.floor(v * (canvas.height - 1));
+        const index = (py * canvas.width + px) * 4;
+        
+        // Get grayscale value (average of RGB)
+        const r = pixels[index];
+        const g = pixels[index + 1];
+        const b = pixels[index + 2];
+        const brightness = (r + g + b) / 3 / 255; // Normalize to 0-1
+        
+        // Add texture-based displacement on top of existing bumps
+        const displacement = (brightness - 0.5) * strength;
+        positions[i + 2] += displacement;
+      }
+      
+      geometry.attributes.position.needsUpdate = true;
+      geometry.computeVertexNormals();
+      console.log('Displacement applied successfully');
+    }
+  }, [displacementTexture, displacementLoaded, preset.groundSubdivisions]);
+  
+  // Load and configure texture for appearance
+  const texture = useMemo(() => {
+    if (!GROUND_SETTINGS.texture.enabled) return null;
+    
+    const loader = new THREE.TextureLoader();
+    const tex = loader.load(GROUND_SETTINGS.texture.path);
+    
+    // Configure texture wrapping and repeat
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(
+      GROUND_SETTINGS.texture.repeat.x, 
+      GROUND_SETTINGS.texture.repeat.y
+    );
+    tex.rotation = GROUND_SETTINGS.texture.rotation;
+    
+    return tex;
+  }, []);
   
   return (
     <mesh 
       ref={meshRef} 
       rotation={[-Math.PI / 2, 0, 0]} 
-      position={[MODEL_X_OFFSET, -0.75, 0]}
+      position={[
+        MODEL_X_OFFSET + GROUND_SETTINGS.position.xOffset, 
+        GROUND_SETTINGS.position.yOffset, 
+        0
+      ]}
       receiveShadow={preset.enableShadows}
       geometry={bumpyGeometry}
     >
       <meshStandardMaterial 
-        color="#1C1F23"
-        roughness={0.8}
-        metalness={0.1}
+        map={texture}
+        color={GROUND_SETTINGS.material.color}
+        roughness={GROUND_SETTINGS.material.roughness}
+        metalness={GROUND_SETTINGS.material.metalness}
+        transparent={GROUND_SETTINGS.texture.opacity < 1.0}
+        opacity={GROUND_SETTINGS.texture.opacity}
       />
     </mesh>
   );
@@ -172,6 +385,174 @@ function BackgroundSphere({ quality }) {
         opacity={0.8}
       />
     </mesh>
+  );
+}
+
+// Dust Particles for atmospheric effect
+function DustParticles({ quality }) {
+  const particlesRef = useRef();
+  const preset = QUALITY_PRESETS[quality];
+  
+  // Determine particle count based on settings
+  const particleCount = PARTICLE_SETTINGS.density.useQualityPreset 
+    ? preset.particleCount 
+    : PARTICLE_SETTINGS.density.custom;
+  
+  // Create particle geometry and initial positions
+  const { positions, velocities, sizes } = useMemo(() => {
+    const positions = new Float32Array(particleCount * 3);
+    const velocities = new Float32Array(particleCount * 3);
+    const sizes = new Float32Array(particleCount);
+    
+    // Get settings
+    const { spawnArea, appearance, speed, direction } = PARTICLE_SETTINGS;
+    const spread = spawnArea.width;
+    const height = spawnArea.height;
+    const yOffset = spawnArea.yOffset;
+    
+    // Base velocity values
+    const baseHorizontalSpeed = 0.003;
+    const baseVerticalSpeed = 0.005;
+    const baseVerticalMin = 0.002;
+    
+    for (let i = 0; i < particleCount; i++) {
+      const i3 = i * 3;
+      
+      // Random position in a box around the vehicle
+      positions[i3] = (Math.random() - 0.5) * spread + MODEL_X_OFFSET;
+      positions[i3 + 1] = Math.random() * height + yOffset;
+      positions[i3 + 2] = (Math.random() - 0.5) * spread;
+      
+      // Calculate velocities with direction bias and speed multipliers
+      // X velocity (horizontal left/right)
+      velocities[i3] = (
+        (Math.random() - 0.5 + direction.x) * baseHorizontalSpeed * 
+        speed.horizontal * speed.overall
+      );
+      
+      // Y velocity (vertical up/down) - typically upward for dust
+      velocities[i3 + 1] = (
+        (Math.random() * baseVerticalSpeed + baseVerticalMin + direction.y * 0.002) * 
+        speed.vertical * speed.overall
+      );
+      
+      // Z velocity (horizontal forward/back)
+      velocities[i3 + 2] = (
+        (Math.random() - 0.5 + direction.z) * baseHorizontalSpeed * 
+        speed.horizontal * speed.overall
+      );
+      
+      // Varying sizes for depth perception
+      const sizeRange = appearance.sizeMax - appearance.sizeMin;
+      sizes[i] = Math.random() * sizeRange + appearance.sizeMin;
+    }
+    
+    return { positions, velocities, sizes };
+  }, [particleCount]);
+  
+  // Create particle texture (circular sprite)
+  const particleTexture = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 32;
+    canvas.height = 32;
+    const ctx = canvas.getContext('2d');
+    
+    // Draw a soft circular gradient
+    const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+    gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+    gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.5)');
+    gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 32, 32);
+    
+    const texture = new THREE.CanvasTexture(canvas);
+    return texture;
+  }, []);
+  
+  // Animate particles
+  useFrame((state, delta) => {
+    if (!particlesRef.current) return;
+    
+    const positions = particlesRef.current.geometry.attributes.position.array;
+    const { spawnArea, behavior, direction } = PARTICLE_SETTINGS;
+    
+    // Determine if particles are moving up or down based on direction bias
+    const isMovingDown = direction.y < 0;
+    const minHeight = behavior.resetHeightMin;
+    const maxHeight = spawnArea.yOffset + spawnArea.height;
+    
+    for (let i = 0; i < particleCount; i++) {
+      const i3 = i * 3;
+      
+      // Apply velocity
+      positions[i3] += velocities[i3];
+      positions[i3 + 1] += velocities[i3 + 1];
+      positions[i3 + 2] += velocities[i3 + 2];
+      
+      // Check if particle needs to reset based on direction
+      let needsReset = false;
+      
+      if (isMovingDown) {
+        // For falling particles, reset when they go below minimum height
+        needsReset = positions[i3 + 1] < minHeight;
+      } else {
+        // For rising particles, reset when they go above reset height
+        needsReset = positions[i3 + 1] > behavior.resetHeight;
+      }
+      
+      // Also reset if drifted too far horizontally
+      if (Math.abs(positions[i3] - MODEL_X_OFFSET) > behavior.maxDrift || 
+          Math.abs(positions[i3 + 2]) > behavior.maxDrift) {
+        needsReset = true;
+      }
+      
+      if (needsReset) {
+        // Respawn particle
+        positions[i3] = (Math.random() - 0.5) * spawnArea.width + MODEL_X_OFFSET;
+        positions[i3 + 2] = (Math.random() - 0.5) * spawnArea.width;
+        
+        // Reset height depends on direction
+        if (isMovingDown) {
+          // Spawn at top for falling particles
+          positions[i3 + 1] = maxHeight + Math.random() * behavior.respawnOffset;
+        } else {
+          // Spawn at bottom for rising particles
+          positions[i3 + 1] = spawnArea.yOffset;
+        }
+      }
+    }
+    
+    particlesRef.current.geometry.attributes.position.needsUpdate = true;
+  });
+  
+  return (
+    <points ref={particlesRef}>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          count={particleCount}
+          array={positions}
+          itemSize={3}
+        />
+        <bufferAttribute
+          attach="attributes-size"
+          count={particleCount}
+          array={sizes}
+          itemSize={1}
+        />
+      </bufferGeometry>
+      <pointsMaterial
+        size={PARTICLE_SETTINGS.appearance.sizeMax}
+        map={particleTexture}
+        transparent={true}
+        opacity={PARTICLE_SETTINGS.appearance.opacity}
+        color={PARTICLE_SETTINGS.appearance.color}
+        sizeAttenuation={true}
+        depthWrite={false}
+        blending={THREE.AdditiveBlending}
+      />
+    </points>
   );
 }
 
@@ -608,6 +989,9 @@ const Vehicle3D = memo(function Vehicle3D() {
 
         {/* Background sphere */}
         <BackgroundSphere quality={quality} />
+
+        {/* Dust Particles */}
+        <DustParticles quality={quality} />
 
         {/* Ground and Grid */}
         <GroundPlane quality={quality} />
