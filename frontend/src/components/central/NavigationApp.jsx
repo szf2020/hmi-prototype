@@ -217,25 +217,27 @@ function NavigationApp() {
           
           // Add car marker if we have user location
           if (userLocation) {
-            // Create SVG as a data URL for MapLibre image
-            const carSvg = `
-              <svg width="98" height="98" viewBox="0 0 98 98" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <g filter="url(#filter0_d_5753_109516)">
-                  <path d="M46.3208 14.5407L17.2586 73.3893C16.0454 75.846 19.4325 78.0679 21.7988 76.3675L47.1469 58.1535C48.2256 57.3783 49.7822 57.3783 50.861 58.1535L76.209 76.3675C78.5753 78.0679 81.9624 75.8461 80.7492 73.3893L51.6871 14.5407C50.6725 12.4864 47.3353 12.4864 46.3208 14.5407Z" fill="url(#paint0_linear_5753_109516)"/>
+            // Create HTML element with inline SVG for car marker
+            const carElement = document.createElement('div');
+            carElement.className = 'car-marker';
+            carElement.innerHTML = `
+              <svg width="80" height="80" viewBox="0 0 98 98" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g filter="url(#filter0_d_car)">
+                  <path d="M46.3208 14.5407L17.2586 73.3893C16.0454 75.846 19.4325 78.0679 21.7988 76.3675L47.1469 58.1535C48.2256 57.3783 49.7822 57.3783 50.861 58.1535L76.209 76.3675C78.5753 78.0679 81.9624 75.8461 80.7492 73.3893L51.6871 14.5407C50.6725 12.4864 47.3353 12.4864 46.3208 14.5407Z" fill="url(#paint0_linear_car)"/>
                   <path d="M46.3208 14.5407L17.2586 73.3893C16.0454 75.846 19.4325 78.0679 21.7988 76.3675L47.1469 58.1535C48.2256 57.3783 49.7822 57.3783 50.861 58.1535L76.209 76.3675C78.5753 78.0679 81.9624 75.8461 80.7492 73.3893L51.6871 14.5407C50.6725 12.4864 47.3353 12.4864 46.3208 14.5407Z" stroke="#F0F4F8" stroke-width="2"/>
                 </g>
                 <defs>
-                  <filter id="filter0_d_5753_109516" x="0" y="0" width="98.0078" height="97.9653" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                  <filter id="filter0_d_car" x="0" y="0" width="98.0078" height="97.9653" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
                     <feFlood flood-opacity="0" result="BackgroundImageFix"/>
                     <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
                     <feOffset dy="4"/>
                     <feGaussianBlur stdDeviation="8"/>
                     <feComposite in2="hardAlpha" operator="out"/>
                     <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.7 0"/>
-                    <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_5753_109516"/>
-                    <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_5753_109516" result="shape"/>
+                    <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_car"/>
+                    <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_car" result="shape"/>
                   </filter>
-                  <linearGradient id="paint0_linear_5753_109516" x1="17.0039" y1="74" x2="81.0039" y2="74" gradientUnits="userSpaceOnUse">
+                  <linearGradient id="paint0_linear_car" x1="17.0039" y1="74" x2="81.0039" y2="74" gradientUnits="userSpaceOnUse">
                     <stop stop-color="#9D9D9D"/>
                     <stop offset="0.499388" stop-color="#D6D6D6"/>
                     <stop offset="0.503297" stop-color="#8A8A8A"/>
@@ -245,49 +247,17 @@ function NavigationApp() {
               </svg>
             `;
             
-            // Convert SVG to image and add to map
-            const img = new Image(98, 98);
-            img.onload = () => {
-              if (!mapInstance.hasImage('car-icon')) {
-                mapInstance.addImage('car-icon', img);
-              }
-              
-              // Create GeoJSON for car position
-              const carGeoJSON = {
-                type: 'Feature',
-                properties: {},
-                geometry: {
-                  type: 'Point',
-                  coordinates: [userLocation.longitude, userLocation.latitude]
-                }
-              };
-              
-              // Add car position source
-              mapInstance.addSource('car-position', {
-                type: 'geojson',
-                data: carGeoJSON
-              });
-              
-              // Add car marker as symbol layer
-              mapInstance.addLayer({
-                id: 'car-marker',
-                type: 'symbol',
-                source: 'car-position',
-                layout: {
-                  'icon-image': 'car-icon',
-                  'icon-size': 0.8,
-                  'icon-allow-overlap': true,
-                  'icon-ignore-placement': true,
-                  'icon-rotation-alignment': 'map'
-                }
-              });
+            // Create marker using MapLibre Marker with HTML element (more stable)
+            carMarker.current = new maplibregl.Marker({
+              element: carElement,
+              anchor: 'center',
+              rotationAlignment: 'map',
+              pitchAlignment: 'map'
+            })
+              .setLngLat([userLocation.longitude, userLocation.latitude])
+              .addTo(mapInstance);
               
               console.log('Car marker added at:', userLocation);
-            };
-            
-            // Create blob URL for SVG
-            const blob = new Blob([carSvg], { type: 'image/svg+xml' });
-            img.src = URL.createObjectURL(blob);
             
             // ===== REAL-TIME LOCATION TRACKING (COMMENTED OUT) =====
             // Uncomment below to enable real-time location tracking
@@ -349,28 +319,6 @@ function NavigationApp() {
     return () => {
       // Cleanup function - only run when component truly unmounts
       if (map.current) {
-        // Remove car marker layer and source
-        if (map.current.getLayer('car-marker')) {
-          map.current.removeLayer('car-marker');
-        }
-        if (map.current.getSource('car-position')) {
-          map.current.removeSource('car-position');
-        }
-        
-        // Remove destination marker layers
-        if (map.current.getLayer('destination-marker-inner')) {
-          map.current.removeLayer('destination-marker-inner');
-        }
-        if (map.current.getLayer('destination-marker-outer')) {
-          map.current.removeLayer('destination-marker-outer');
-        }
-        if (map.current.getLayer('destination-marker-glow')) {
-          map.current.removeLayer('destination-marker-glow');
-        }
-        if (map.current.getSource('destination')) {
-          map.current.removeSource('destination');
-        }
-        
         // Remove route layers
         if (map.current.getLayer('route-line')) {
           map.current.removeLayer('route-line');
@@ -389,13 +337,16 @@ function NavigationApp() {
         map.current = null;
       }
       
+      // Remove HTML markers
       if (destinationMarker.current) {
         destinationMarker.current.remove();
         destinationMarker.current = null;
       }
       if (carMarker.current) {
+        carMarker.current.remove();
         carMarker.current = null;
       }
+      
       globalMapInstance = null;
       isInitialized.current = false;
     };
@@ -517,20 +468,6 @@ function NavigationApp() {
       destinationMarker.current = null;
     }
 
-    // Remove existing destination layers if any
-    if (map.current.getLayer('destination-marker-inner')) {
-      map.current.removeLayer('destination-marker-inner');
-    }
-    if (map.current.getLayer('destination-marker-outer')) {
-      map.current.removeLayer('destination-marker-outer');
-    }
-    if (map.current.getLayer('destination-marker-glow')) {
-      map.current.removeLayer('destination-marker-glow');
-    }
-    if (map.current.getSource('destination')) {
-      map.current.removeSource('destination');
-    }
-
     // Add route source
     map.current.addSource('route', {
       type: 'geojson',
@@ -585,80 +522,43 @@ function NavigationApp() {
       }
     });
 
-    // Add destination marker as a GeoJSON layer (more reliable positioning)
-    const destinationGeoJSON = {
-      type: 'Feature',
-      properties: {},
-      geometry: {
-        type: 'Point',
-        coordinates: [destination.longitude, destination.latitude]
-      }
-    };
-
-    console.log('Adding destination marker at:', [destination.longitude, destination.latitude]);
-
-    // Add destination point source
-    map.current.addSource('destination', {
-      type: 'geojson',
-      data: destinationGeoJSON
+    console.log('Adding destination marker at:', {
+      coords: [destination.longitude, destination.latitude],
+      name: destination.name
     });
 
-    // Add pulsing outer glow
-    map.current.addLayer({
-      id: 'destination-marker-glow',
-      type: 'circle',
-      source: 'destination',
-      paint: {
-        'circle-radius': 30,
-        'circle-color': '#4A90E2',
-        'circle-opacity': 0.3,
-        'circle-blur': 0.8
-      }
-    });
+    // Create HTML element for destination marker with pulsing animation
+    const destElement = document.createElement('div');
+    destElement.className = 'destination-marker';
+    destElement.innerHTML = `
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <foreignObject x="-70" y="-70" width="188" height="188">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="backdrop-filter:blur(35px);clip-path:url(#bgblur_dest_marker);height:100%;width:100%"></div>
+        </foreignObject>
+        <g data-figma-bg-blur-radius="70">
+          <rect width="48" height="48" rx="24" fill="#335FFF"/>
+          <circle cx="24" cy="24" r="12" fill="#EFF4F9"/>
+        </g>
+        <defs>
+          <clipPath id="bgblur_dest_marker" transform="translate(70 70)">
+            <rect width="48" height="48" rx="24"/>
+          </clipPath>
+        </defs>
+      </svg>
+    `;
 
-    // Add outer circle (blue with white border)
-    map.current.addLayer({
-      id: 'destination-marker-outer',
-      type: 'circle',
-      source: 'destination',
-      paint: {
-        'circle-radius': 20,
-        'circle-color': '#4A90E2',
-        'circle-stroke-width': 3,
-        'circle-stroke-color': '#ffffff'
-      }
-    });
-
-    // Add inner circle (white center)
-    map.current.addLayer({
-      id: 'destination-marker-inner',
-      type: 'circle',
-      source: 'destination',
-      paint: {
-        'circle-radius': 8,
-        'circle-color': '#ffffff'
-      }
-    });
-
-    // Animate the glow effect
-    let glowSize = 30;
-    let glowDirection = 1;
-    const animateGlow = () => {
-      if (!map.current || !map.current.getLayer('destination-marker-glow')) return;
-      
-      glowSize += glowDirection * 0.5;
-      if (glowSize >= 35) glowDirection = -1;
-      if (glowSize <= 25) glowDirection = 1;
-      
-      map.current.setPaintProperty('destination-marker-glow', 'circle-radius', glowSize);
-      requestAnimationFrame(animateGlow);
-    };
-    animateGlow();
-
-    // Ensure car marker is on top of route layers
-    if (map.current.getLayer('car-marker')) {
-      map.current.moveLayer('car-marker');
-    }
+    // Create destination marker using MapLibre Marker with HTML element
+    // Use 'center' anchor for circular markers to position them accurately
+    destinationMarker.current = new maplibregl.Marker({
+      element: destElement,
+      anchor: 'center',
+      rotationAlignment: 'map',
+      pitchAlignment: 'map'
+    })
+      .setLngLat([destination.longitude, destination.latitude])
+      .addTo(map.current);
+    
+    console.log('Destination marker created successfully at lng:', destination.longitude, 'lat:', destination.latitude);
 
     // Fit map to show both start and end points
     const bounds = new maplibregl.LngLatBounds();
