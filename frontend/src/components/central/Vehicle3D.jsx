@@ -74,10 +74,10 @@ const GROUND_SETTINGS = {
   reflection: {
     enabled: true,         // Enable/disable ground reflections
     intensity: 1.0,        // Reflection intensity (0 = no reflection, 1 = full reflection)
-    blur: [200, 200],     // Reflection blur [horizontal, vertical] (0 = sharp, higher = more blur)
-    mixBlur: 1.25,           // How much blur mixes with distance
-    mixStrength: 5,     // Strength of the reflection mix (0 = no reflection, higher = stronger reflection)
-    mirror: 0.2,          // Mirror-like quality (0 = realistic, 1 = perfect mirror)
+    blur: [150, 150],     // Reflection blur [horizontal, vertical] (0 = sharp, higher = more blur)
+    mixBlur: 1.1,           // How much blur mixes with distance
+    mixStrength: 7,     // Strength of the reflection mix (0 = no reflection, higher = stronger reflection)
+    mirror: 0.5,          // Mirror-like quality (0 = realistic, 1 = perfect mirror)
     offset: 0,          // Reflection vertical offset (0 = at ground level, higher = further below ground)
   },
   

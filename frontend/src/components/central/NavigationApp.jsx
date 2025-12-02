@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import './NavigationApp.css';
@@ -21,6 +21,7 @@ function NavigationApp() {
   const carMarker = useRef(null);
   const destinationMarker = useRef(null);
   const isInitialized = useRef(false);
+  const routeSvgRef = useRef(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [locationStatus, setLocationStatus] = useState('requesting');
   const [isSearchOpen, setIsSearchOpen] = useState(true); // Show by default
@@ -28,6 +29,26 @@ function NavigationApp() {
   const [activeRoute, setActiveRoute] = useState(null);
   const [isLoadingRoute, setIsLoadingRoute] = useState(false);
   const [overlayPanelSide, setOverlayPanelSide] = useState('left'); // Track which side the overlay is on
+  const [routeCoordinates, setRouteCoordinates] = useState(null);
+
+  // Function to update SVG route path based on current map view
+  const updateSvgRoute = useCallback(() => {
+    if (!map.current || !routeCoordinates || !routeSvgRef.current) return;
+    
+    // Convert geo coordinates to screen pixels using map.project()
+    const points = routeCoordinates.map(coord => {
+      const point = map.current.project([coord[0], coord[1]]);
+      return `${point.x},${point.y}`;
+    });
+    
+    // Build SVG path d attribute
+    const pathD = `M ${points.join(' L ')}`;
+    
+    // Update all path elements with the new path
+    routeSvgRef.current.querySelectorAll('path').forEach(path => {
+      path.setAttribute('d', pathD);
+    });
+  }, [routeCoordinates]);
 
   useEffect(() => {
     // Prevent double initialization (React StrictMode guard)
@@ -215,6 +236,33 @@ function NavigationApp() {
           console.log('Map loaded successfully');
           setLocationStatus(userLocation ? 'found' : 'error');
           
+          // Create and insert SVG route layer into the map container
+          const svgNS = 'http://www.w3.org/2000/svg';
+          const svg = document.createElementNS(svgNS, 'svg');
+          svg.setAttribute('class', 'route-svg-layer');
+          
+          // Create filter definition for shadow
+          const defs = document.createElementNS(svgNS, 'defs');
+          const filter = document.createElementNS(svgNS, 'filter');
+          filter.setAttribute('id', 'route-shadow-filter');
+          filter.setAttribute('x', '-50%');
+          filter.setAttribute('y', '-50%');
+          filter.setAttribute('width', '200%');
+          filter.setAttribute('height', '200%');
+          
+          const feGaussianBlur = document.createElementNS(svgNS, 'feGaussianBlur');
+          feGaussianBlur.setAttribute('in', 'SourceGraphic');
+          feGaussianBlur.setAttribute('stdDeviation', '4');
+          
+          filter.appendChild(feGaussianBlur);
+          defs.appendChild(filter);
+          svg.appendChild(defs);
+          
+          // Insert SVG into the map container (before markers layer)
+          const mapContainer = mapInstance.getContainer();
+          mapContainer.appendChild(svg);
+          routeSvgRef.current = svg;
+          
           // Add car marker if we have user location
           if (userLocation) {
             // Create HTML element with inline SVG for car marker
@@ -318,21 +366,13 @@ function NavigationApp() {
 
     return () => {
       // Cleanup function - only run when component truly unmounts
+      // Remove SVG route layer
+      if (routeSvgRef.current) {
+        routeSvgRef.current.remove();
+        routeSvgRef.current = null;
+      }
+      
       if (map.current) {
-        // Remove route layers
-        if (map.current.getLayer('route-line')) {
-          map.current.removeLayer('route-line');
-        }
-        if (map.current.getLayer('route-outline')) {
-          map.current.removeLayer('route-outline');
-        }
-        if (map.current.getLayer('route-shadow')) {
-          map.current.removeLayer('route-shadow');
-        }
-        if (map.current.getSource('route')) {
-          map.current.removeSource('route');
-        }
-        
         map.current.remove();
         map.current = null;
       }
@@ -351,6 +391,53 @@ function NavigationApp() {
       isInitialized.current = false;
     };
   }, []);
+
+  // Effect to register map event listeners for SVG route updates
+  useEffect(() => {
+    if (!map.current || !routeCoordinates || !routeSvgRef.current) return;
+    
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const svg = routeSvgRef.current;
+    
+    // Remove existing path elements (but keep defs)
+    svg.querySelectorAll('path').forEach(path => path.remove());
+    
+    // Create new path elements for the route
+    const shadowPath = document.createElementNS(svgNS, 'path');
+    shadowPath.setAttribute('class', 'route-shadow');
+    shadowPath.setAttribute('filter', 'url(#route-shadow-filter)');
+    
+    const outlinePath = document.createElementNS(svgNS, 'path');
+    outlinePath.setAttribute('class', 'route-outline');
+    
+    const linePath = document.createElementNS(svgNS, 'path');
+    linePath.setAttribute('class', 'route-line');
+    
+    svg.appendChild(shadowPath);
+    svg.appendChild(outlinePath);
+    svg.appendChild(linePath);
+    
+    // Update SVG route immediately when coordinates change
+    updateSvgRoute();
+    
+    // Register event listeners for map movement
+    const handleMapMove = () => updateSvgRoute();
+    
+    map.current.on('move', handleMapMove);
+    map.current.on('zoom', handleMapMove);
+    map.current.on('rotate', handleMapMove);
+    map.current.on('pitch', handleMapMove);
+    
+    // Cleanup listeners when routeCoordinates changes or component unmounts
+    return () => {
+      if (map.current) {
+        map.current.off('move', handleMapMove);
+        map.current.off('zoom', handleMapMove);
+        map.current.off('rotate', handleMapMove);
+        map.current.off('pitch', handleMapMove);
+      }
+    };
+  }, [routeCoordinates, updateSvgRoute]);
 
   // Predefined destinations for simulation
   const DESTINATIONS = {
@@ -434,93 +521,18 @@ function NavigationApp() {
     const currentLocation = FAKE_CURRENT_LOCATION;
     
     // Fetch actual route geometry from OSRM API
-    const routeCoordinates = await fetchRouteGeometry(currentLocation, destination);
+    const fetchedRouteCoordinates = await fetchRouteGeometry(currentLocation, destination);
     
     setIsLoadingRoute(false);
     
-    // Create GeoJSON for the route
-    const routeGeoJSON = {
-      type: 'Feature',
-      properties: {},
-      geometry: {
-        type: 'LineString',
-        coordinates: routeCoordinates
-      }
-    };
-
-    // Remove existing route if any
-    if (map.current.getSource('route')) {
-      if (map.current.getLayer('route-line')) {
-        map.current.removeLayer('route-line');
-      }
-      if (map.current.getLayer('route-outline')) {
-        map.current.removeLayer('route-outline');
-      }
-      if (map.current.getLayer('route-shadow')) {
-        map.current.removeLayer('route-shadow');
-      }
-      map.current.removeSource('route');
-    }
+    // Store route coordinates in state for SVG rendering
+    setRouteCoordinates(fetchedRouteCoordinates);
 
     // Remove existing destination marker if any
     if (destinationMarker.current) {
       destinationMarker.current.remove();
       destinationMarker.current = null;
     }
-
-    // Add route source
-    map.current.addSource('route', {
-      type: 'geojson',
-      data: routeGeoJSON
-    });
-
-    // Add route shadow/glow (for depth)
-    map.current.addLayer({
-      id: 'route-shadow',
-      type: 'line',
-      source: 'route',
-      layout: {
-        'line-join': 'round',
-        'line-cap': 'round'
-      },
-      paint: {
-        'line-color': '#000000',
-        'line-width': 14,
-        'line-opacity': 0.4,
-        'line-blur': 4
-      }
-    });
-
-    // Add route outline (darker blue for depth)
-    map.current.addLayer({
-      id: 'route-outline',
-      type: 'line',
-      source: 'route',
-      layout: {
-        'line-join': 'round',
-        'line-cap': 'round'
-      },
-      paint: {
-        'line-color': '#0047AB',
-        'line-width': 10,
-        'line-opacity': 0.8
-      }
-    });
-
-    // Add route line (bright blue)
-    map.current.addLayer({
-      id: 'route-line',
-      type: 'line',
-      source: 'route',
-      layout: {
-        'line-join': 'round',
-        'line-cap': 'round'
-      },
-      paint: {
-        'line-color': '#4A90E2',
-        'line-width': 7
-      }
-    });
 
     console.log('Adding destination marker at:', {
       coords: [destination.longitude, destination.latitude],
@@ -621,7 +633,7 @@ function NavigationApp() {
 
   return (
     <div className="navigation-app">
-      {/* Map Container */}
+      {/* Map Container - SVG route layer is inserted here programmatically */}
       <div ref={mapContainer} className="map-container" />
 
       {/* Search Overlay - Always visible */}
