@@ -39,6 +39,10 @@ const defaultState = {
   currentTrack: 'No Track Playing',
   volume: 50,
   
+  // Radio (persisted)
+  radioFavorites: [],
+  radioVolume: 50,
+  
   // Navigation
   destination: null,
   eta: null,
@@ -170,6 +174,37 @@ function handleAction(action) {
       break;
     case 'UPDATE_SPEED':
       hmiState.currentSpeed = action.payload;
+      break;
+    case 'ADD_RADIO_FAVORITE':
+      // Add station to favorites if not already there
+      if (action.payload && !hmiState.radioFavorites.some(f => f.stationuuid === action.payload.stationuuid)) {
+        hmiState.radioFavorites.push(action.payload);
+        console.log(`📻 Added favorite: ${action.payload.name}`);
+      }
+      break;
+    case 'REMOVE_RADIO_FAVORITE':
+      // Remove station from favorites
+      if (action.payload) {
+        const beforeCount = hmiState.radioFavorites.length;
+        hmiState.radioFavorites = hmiState.radioFavorites.filter(f => f.stationuuid !== action.payload.stationuuid);
+        if (hmiState.radioFavorites.length < beforeCount) {
+          console.log(`📻 Removed favorite: ${action.payload.name}`);
+        }
+      }
+      break;
+    case 'SET_RADIO_FAVORITES':
+      // Replace all favorites (for sync)
+      if (Array.isArray(action.payload)) {
+        hmiState.radioFavorites = action.payload;
+        console.log(`📻 Synced ${action.payload.length} favorites`);
+      }
+      break;
+    case 'SET_RADIO_VOLUME':
+      // Set radio volume (0-100)
+      if (typeof action.payload === 'number') {
+        hmiState.radioVolume = Math.max(0, Math.min(100, action.payload));
+        console.log(`🔊 Radio volume set to ${hmiState.radioVolume}%`);
+      }
       break;
     default:
       console.log('Unknown action:', action.type);

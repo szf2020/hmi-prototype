@@ -227,6 +227,9 @@
 
 .music-progress-container {
   width: 100%;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
 }
 
 .music-progress-bar {
@@ -242,6 +245,89 @@
   background: var(--onSurface-enabled);
   border-radius: 2px;
   transition: width 0.3s ease;
+}
+
+/* Live indicator for radio */
+.music-live-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xsmall, 8px);
+}
+
+.music-live-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--surface-functional-positive);
+  border-radius: 50%;
+  animation: widgetPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes widgetPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.8);
+  }
+}
+
+.music-live-text {
+  color: var(--surface-functional-positive);
+  margin: 0;
+  font-weight: var(--fontWeight-semibold, 600);
+  letter-spacing: 0.05em;
+}
+
+/* Loading indicator */
+.music-loading-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xsmall, 8px);
+}
+
+.music-loading-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--onSurface-inactive);
+  border-radius: 50%;
+  animation: widgetLoadingBounce 1.4s ease-in-out infinite both;
+}
+
+.music-loading-dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.music-loading-dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes widgetLoadingBounce {
+  0%, 80%, 100% {
+    transform: scale(0.6);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.music-loading-text {
+  color: var(--onSurface-inactive);
+  margin: 0;
+}
+
+/* Paused indicator */
+.music-paused-indicator {
+  display: flex;
+  align-items: center;
+}
+
+.music-paused-text {
+  color: var(--onSurface-inactive);
+  margin: 0;
 }
 
 .music-controls {
@@ -262,13 +348,26 @@
   height: auto;
 }
 
-.music-control-btn.ds-icon-button:hover {
+.music-control-btn.ds-icon-button:hover:not(:disabled) {
   color: var(--onSurface-enabled);
   background: transparent;
 }
 
+.music-control-btn.ds-icon-button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
 .music-control-play.ds-icon-button {
   color: var(--onSurface-enabled);
+}
+
+.music-control-btn.is-favorite {
+  color: var(--surface-functional-warning);
+}
+
+.music-control-btn.is-favorite:hover {
+  color: var(--surface-functional-warning);
 }
 
 /* Navigation Widget Styles */
