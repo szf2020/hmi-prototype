@@ -26,7 +26,6 @@
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-lg, 24px);
 }
 
 /* Camera Selector Dots */
@@ -58,6 +57,7 @@
   height: 16px;
   border-radius: 50%;
   background: rgba(128, 128, 128, 0.6);
+  border: var(--borderWidth-2) solid var(--onSurface-inactive);
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
@@ -67,67 +67,75 @@
   box-shadow: 0 0 16px rgba(0, 102, 255, 0.6);
 }
 
-/* Position dots around the vehicle */
+/* Position dots around the vehicle - overlaying on the vehicle */
 .camera-dot.top {
-  top: 10%;
+  top: 22%;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .camera-dot.top-left {
-  top: 25%;
-  left: 5%;
+  top: 30%;
+  left: 22%;
 }
 
 .camera-dot.top-right {
-  top: 25%;
-  right: 5%;
+  top: 30%;
+  right: 22%;
 }
 
 .camera-dot.bottom {
-  bottom: 10%;
+  bottom: 22%;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .camera-dot.bottom-left {
-  bottom: 25%;
-  left: 5%;
+  bottom: 30%;
+  left: 22%;
 }
 
 .camera-dot.bottom-right {
-  bottom: 25%;
-  right: 5%;
+  bottom: 30%;
+  right: 22%;
 }
 
 /* Surround View */
-.surround-view {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md, 16px);
-}
-
 .surround-view-container {
   flex: 1;
   position: relative;
-  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-  border-radius: var(--border-radius-lg, 16px);
   overflow: hidden;
+  padding: 0;
+  background-image: url('/images/dashcam/top-down.png');
+  background-size: 155%;
+  background-position: calc(50% + var(--spacing-16)) center;
+  background-repeat: no-repeat;
+}
+
+.surround-view-container .ds-card__body {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid var(--color-border-subtle, rgba(255, 255, 255, 0.1));
+  height: 100%;
+  padding: 0;
 }
 
-.vehicle-icon {
-  width: auto;
-  height: 40%;
-  max-width: 60%;
-  object-fit: contain;
-  opacity: 0.9;
+/* 3D Vehicle Top-Down View */
+.vehicle-3d-topdown {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60%;
+  height: 50%;
   z-index: 1;
   pointer-events: none;
+}
+
+.vehicle-3d-topdown canvas {
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .proximity-zones {
@@ -157,52 +165,74 @@
   opacity: 1;
 }
 
+/* Cone-shaped zones emanating from vehicle center */
 .zone-front {
   top: 0;
-  left: 30%;
-  right: 30%;
-  height: 30%;
-  background: linear-gradient(to bottom, rgba(0, 255, 0, 0.2), transparent);
+  left: 20%;
+  right: 20%;
+  height: 38%;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), transparent);
+  clip-path: polygon(50% 100%, 15% 0%, 85% 0%);
 }
 
 .zone-front-left {
   top: 0;
-  left: 0;
-  width: 35%;
-  height: 45%;
-  background: linear-gradient(135deg, rgba(255, 255, 0, 0.2), transparent);
+  left: -5%;
+  width: 50%;
+  height: 55%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), transparent);
+  clip-path: polygon(100% 100%, -80% 0%, 0% 0%, 80% 0%);
 }
 
 .zone-front-right {
   top: 0;
-  right: 0;
-  width: 35%;
-  height: 45%;
-  background: linear-gradient(225deg, rgba(255, 255, 0, 0.2), transparent);
+  /* 1. REFLECT POSITION: Change left to right */
+  right: -5%; 
+  width: 50%;
+  height: 55%;
+  
+  /* 2. REFLECT GRADIENT: 135deg (Bottom-Right) becomes 225deg (Bottom-Left) */
+  background: linear-gradient(225deg, rgba(255, 255, 255, 0.3), transparent);
+  
+  /* 3. REFLECT CLIP-PATH: Formula used is (100% - x) for every x coordinate */
+  clip-path: polygon(0% 100%, 180% 0%, 100% 0%, 20% 0%);
 }
 
 .zone-rear {
   bottom: 0;
-  left: 30%;
-  right: 30%;
-  height: 30%;
-  background: linear-gradient(to top, rgba(255, 0, 0, 0.2), transparent);
+  left: 20%;
+  right: 20%;
+  height: 38%;
+  background: linear-gradient(to top, rgba(255, 255, 255, 0.3), transparent);
+  clip-path: polygon(50% 0%, 15% 100%, 85% 100%);
 }
 
 .zone-rear-left {
+  /* X-axis reflection of .zone-front-left */
   bottom: 0;
-  left: 0;
-  width: 35%;
-  height: 45%;
-  background: linear-gradient(45deg, rgba(255, 255, 0, 0.2), transparent);
+  left: -5%;
+  width: 50%;
+  height: 55%;
+  
+  /* REFLECT GRADIENT: 135deg becomes 45deg */
+  background: linear-gradient(45deg, rgba(255, 255, 255, 0.3), transparent);
+  
+  /* REFLECT CLIP-PATH: Formula used is (100% - y) for every y coordinate */
+  clip-path: polygon(100% 0%, -80% 100%, 0% 100%, 80% 100%);
 }
 
 .zone-rear-right {
+  /* X-axis reflection of .zone-front-right */
   bottom: 0;
-  right: 0;
-  width: 35%;
-  height: 45%;
-  background: linear-gradient(315deg, rgba(255, 255, 0, 0.2), transparent);
+  right: -5%;
+  width: 50%;
+  height: 55%;
+  
+  /* REFLECT GRADIENT: 225deg becomes 315deg */
+  background: linear-gradient(315deg, rgba(255, 255, 255, 0.3), transparent);
+  
+  /* REFLECT CLIP-PATH: Formula used is (100% - y) for every y coordinate */
+  clip-path: polygon(0% 0%, 180% 100%, 100% 100%, 20% 100%);
 }
 
 .surround-label {
@@ -223,13 +253,43 @@
 .individual-camera-view {
   flex: 1;
   position: relative;
-  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-  border-radius: var(--border-radius-lg, 16px);
   overflow: hidden;
+  padding: 0;
+}
+
+.individual-camera-view .ds-card__body {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid var(--color-border-subtle, rgba(255, 255, 255, 0.1));
+  height: 100%;
+  padding: 0;
+}
+
+.camera-feed {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+.camera-label-overlay {
+  position: absolute;
+  top: var(--spacing-16);
+  left: var(--spacing-16);
+  margin: var(--spacing-0);
+  padding: var(--spacing-6) var(--spacing-12);
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: var(--borderRadius-8);
+  backdrop-filter: blur(8px);
 }
 
 .camera-placeholder {
@@ -253,21 +313,6 @@
   font-size: var(--font-size-md, 16px);
   color: var(--color-text-secondary, rgba(255, 255, 255, 0.6));
   margin: 0;
-}
-
-/* Parking Guidelines Overlay */
-.parking-guidelines {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 50%;
-  pointer-events: none;
-}
-
-.guideline-svg {
-  width: 100%;
-  height: 100%;
 }
 
 /* Responsive Adjustments */
@@ -300,23 +345,13 @@
     font-size: var(--font-size-sm, 14px);
   }
 
-  .vehicle-icon {
-    height: 35%;
-    max-width: 50%;
+  .vehicle-3d-topdown {
+    width: 50%;
+    height: 40%;
   }
 }
 
-/* Dark Theme Specific */
-[data-theme="dark"] .surround-view-container,
-[data-theme="dark"] .individual-camera-view {
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
-}
-
-/* Light Theme Specific */
-[data-theme="light"] .surround-view-container,
-[data-theme="light"] .individual-camera-view {
-  background: linear-gradient(135deg, #e0e0e0 0%, #f5f5f5 100%);
-}
+/* Theme-specific adjustments are handled by the Card component */
 
 [data-theme="light"] .dot-inner {
   background: rgba(100, 100, 100, 0.5);

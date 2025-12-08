@@ -81,7 +81,7 @@ const WidgetsContainer = ({ setActiveView }) => {
         <div className="widgets-scroll-area">
           <div className="widgets-grid">
           {/* Widget Card 1 - Music Player */}
-          <Card variant="elevated" className="widget-card music-widget">
+          <Card variant="default" className="widget-card music-widget">
             <div className="music-widget-content">
               <div className="music-header">
                 <div className="music-album-cover">
@@ -162,7 +162,7 @@ const WidgetsContainer = ({ setActiveView }) => {
           </Card>
 
           {/* Widget Card 2 - Navigation Widget */}
-          <Card variant="elevated" className="widget-card navigation-widget">
+          <Card variant="default" className="widget-card navigation-widget">
             <div className="navigation-widget-content">
               <div className="navigation-widget-left">
                 <div className="navigation-text-content">
@@ -205,7 +205,7 @@ const WidgetsContainer = ({ setActiveView }) => {
           </Card>
 
           {/* Widget Card 3 - Calendar Widget */}
-          <Card variant="elevated" className="widget-card calendar-widget">
+          <Card variant="default" className="widget-card calendar-widget">
             <div className="calendar-widget-content">
               <div className="calendar-left">
                 <div className="calendar-day-number">
@@ -250,12 +250,12 @@ const WidgetsContainer = ({ setActiveView }) => {
           </Card>
 
           {/* Widget Card 4 */}
-          <Card variant="elevated" className="widget-card">
+          <Card variant="default" className="widget-card">
             {/* Content will be added later */}
           </Card>
 
           {/* Widget Card 5 */}
-          <Card variant="elevated" className="widget-card">
+          <Card variant="default" className="widget-card">
             {/* Content will be added later */}
           </Card>
           </div>
