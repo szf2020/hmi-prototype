@@ -82,7 +82,7 @@ function ClusterDisplay() {
               <div className="info-icon">🔊</div>
               <div className="info-details">
                 <div className="info-label">Volume</div>
-                <div className="info-value">{state.volume}%</div>
+                <div className="info-value">{state.radio?.volume ?? 50}%</div>
               </div>
             </div>
             <div className="info-item">
