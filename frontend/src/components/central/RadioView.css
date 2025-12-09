@@ -146,6 +146,16 @@
   opacity: 0.4;
   transform: scale(1.2);
   z-index: 1;
+  transition: opacity 300ms ease;
+}
+
+/* Background opacity based on playback state */
+.radio-now-playing-bg.is-playing {
+  opacity: 0.4; /* 100% intensity when playing */
+}
+
+.radio-now-playing-bg.is-paused {
+  opacity: 0.2; /* 50% of playing opacity when paused */
 }
 
 /* Gradient overlay for better text readability */

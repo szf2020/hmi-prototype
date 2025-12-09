@@ -175,8 +175,59 @@
 }
 
 /* Music Widget Styles */
+.music-widget {
+  position: relative;
+  overflow: hidden;
+}
+
 .music-widget .ds-card__body {
   padding: var(--spacing-large, 24px) !important;
+  position: relative;
+  z-index: 2;
+}
+
+/* Background image with blur effect */
+.music-widget-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: var(--station-bg-image);
+  background-size: cover;
+  background-position: center;
+  filter: blur(40px);
+  opacity: 0.4;
+  transform: scale(1.2);
+  z-index: 1;
+  transition: opacity 300ms ease;
+}
+
+/* Background opacity based on playback state */
+.music-widget-bg.is-playing {
+  opacity: 0.4; /* 100% intensity when playing */
+}
+
+.music-widget-bg.is-paused {
+  opacity: 0.2; /* 50% of playing opacity when paused */
+}
+
+/* Gradient overlay for better text readability */
+.music-widget::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 0, 0, 0.6) 0%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+  border-radius: inherit;
 }
 
 .music-widget-content {
@@ -185,6 +236,8 @@
   gap: var(--spacing-large, 24px);
   width: 100%;
   height: 100%;
+  position: relative;
+  z-index: 2;
 }
 
 .music-header {

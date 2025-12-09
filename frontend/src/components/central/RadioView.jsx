@@ -143,7 +143,11 @@ const RadioView = () => {
 
   const getStationTags = (station) => {
     if (!station?.tags) return '';
-    const tags = station.tags.split(',').slice(0, 2).join(' • ');
+    const tags = station.tags
+      .split(',')
+      .slice(0, 2)
+      .map(tag => tag.trim().charAt(0).toUpperCase() + tag.trim().slice(1).toLowerCase())
+      .join(' • ');
     return tags || station.country || '';
   };
 
@@ -206,7 +210,7 @@ const RadioView = () => {
           } : undefined}
         >
           {currentStation?.favicon && (
-            <div className="radio-now-playing-bg" />
+            <div className={`radio-now-playing-bg ${isPlaying ? 'is-playing' : 'is-paused'}`} />
           )}
           <div className="radio-now-playing-content">
             <div className="radio-station-logo">
@@ -283,8 +287,8 @@ const RadioView = () => {
                   <path d="M10.877 35C9.21303 35 8.33325 34.1657 8.33325 32.5695V7.41233C8.33325 5.8162 9.21303 5 10.877 5H15.2376C16.9016 5 17.7813 5.74365 17.7813 7.41233V32.5695C17.7813 34.1657 16.9016 35 15.2376 35H10.877ZM24.7813 35C23.0983 35 22.2185 34.1657 22.2185 32.5695V7.41233C22.2185 5.8162 23.0983 5 24.7813 5H29.1229C30.8059 5 31.6666 5.74365 31.6666 7.41233V32.5695C31.6666 34.1657 30.8059 35 29.1229 35H24.7813Z" fill="currentColor"/>
                 </svg>
               ) : (
-                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M11.6667 7.5V32.5L32.5 20L11.6667 7.5Z" fill="currentColor"/>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4.13281 19.9766C4.13281 21.1367 4.80078 21.6875 5.59766 21.6875C5.94922 21.6875 6.3125 21.5703 6.67578 21.3828L20.3281 13.4023C21.3008 12.8398 21.6289 12.4531 21.6289 11.8438C21.6289 11.2227 21.3008 10.8477 20.3281 10.2852L6.67578 2.30469C6.3125 2.10547 5.94922 2 5.59766 2C4.80078 2 4.13281 2.55078 4.13281 3.71094V19.9766Z" fill="currentColor"/>
                 </svg>
               )
             }
@@ -332,11 +336,7 @@ const RadioView = () => {
               onClick={() => handleCategoryChange(cat.id)}
               className={`radio-category-btn ${cat.id === 'favorites' ? 'radio-category-favorites' : ''}`}
             >
-              {cat.icon && <span className="radio-category-icon">{cat.icon}</span>}
               {cat.label}
-              {cat.id === 'favorites' && favorites.length > 0 && (
-                <span className="radio-category-badge">{favorites.length}</span>
-              )}
             </Button>
           ))}
         </div>

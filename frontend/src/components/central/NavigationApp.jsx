@@ -678,25 +678,6 @@ function NavigationApp() {
           </div>
         </div>
       )}
-      {isLoadingRoute && (
-        <div className="route-loading-status">
-          <div className="status-indicator">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="10" cy="10" r="8" stroke="#4A90E2" strokeWidth="2" strokeDasharray="4 4">
-                <animateTransform
-                  attributeName="transform"
-                  type="rotate"
-                  from="0 10 10"
-                  to="360 10 10"
-                  dur="1s"
-                  repeatCount="indefinite"
-                />
-              </circle>
-            </svg>
-            <span>Calculating route...</span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

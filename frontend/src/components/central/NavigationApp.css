@@ -150,21 +150,6 @@
   border-color: rgba(255, 165, 0, 0.5);
 }
 
-/* Route loading status indicator */
-.route-loading-status {
-  position: absolute;
-  bottom: 120px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: rgba(74, 144, 226, 0.95);
-  border: 1px solid rgba(74, 144, 226, 0.5);
-  border-radius: 24px;
-  padding: 12px 24px;
-  z-index: 100;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 16px rgba(74, 144, 226, 0.4);
-}
-
 .status-indicator {
   display: flex;
   align-items: center;
