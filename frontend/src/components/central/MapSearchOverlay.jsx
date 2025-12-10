@@ -1,8 +1,162 @@
 import { useState, useRef, useEffect } from 'react';
-import { Typography } from '../../design-system';
+import { Typography, Button, Card, IconButton } from '../../design-system';
 import './MapSearchOverlay.css';
 
-function MapSearchOverlay({ isOpen, onClose, onSearch, onPanelSideChange }) {
+// Helper function to get maneuver icon based on type and modifier
+const getManeuverIcon = (type, modifier) => {
+  // Map of maneuver types to SVG icons
+  const iconMap = {
+    'turn-left': (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M9 6L3 12L9 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M3 12H15C18.3137 12 21 14.6863 21 18V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
+    'turn-right': (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M15 6L21 12L15 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M21 12H9C5.68629 12 3 14.6863 3 18V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
+    'slight-left': (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M7 3L3 7L7 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M3 7H8C13.5228 7 18 11.4772 18 17V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
+    'slight-right': (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M17 3L21 7L17 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M21 7H16C10.4772 7 6 11.4772 6 17V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
+    'straight': (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 3L12 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M5 10L12 3L19 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
+    'depart': (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="4" fill="currentColor"/>
+        <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="2"/>
+      </svg>
+    ),
+    'arrive': (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" fill="currentColor"/>
+      </svg>
+    ),
+    'merge': (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8 3V12C8 15.3137 10.6863 18 14 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M16 3V12C16 15.3137 13.3137 18 10 18H3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
+    'roundabout': (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="2"/>
+        <path d="M12 2V7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+        <path d="M12 17V22" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+        <path d="M9 4L12 2L15 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
+    'fork': (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 21V14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+        <path d="M12 14L6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+        <path d="M12 14L18 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+        <path d="M3 3L6 6L3 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M21 3L18 6L21 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
+    'ramp': (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M17 3L21 7L17 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M3 21V14C3 10.134 6.13401 7 10 7H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
+    'default': (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 3L12 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M5 10L12 3L19 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    )
+  };
+
+  // Determine which icon to use based on type and modifier
+  if (type === 'depart') return iconMap['depart'];
+  if (type === 'arrive') return iconMap['arrive'];
+  if (type === 'merge') return iconMap['merge'];
+  if (type === 'roundabout' || type === 'rotary') return iconMap['roundabout'];
+  if (type === 'fork') return iconMap['fork'];
+  if (type === 'off ramp' || type === 'on ramp') return iconMap['ramp'];
+  
+  if (type === 'turn' || type === 'new name' || type === 'continue') {
+    if (modifier === 'left' || modifier === 'sharp left') return iconMap['turn-left'];
+    if (modifier === 'right' || modifier === 'sharp right') return iconMap['turn-right'];
+    if (modifier === 'slight left') return iconMap['slight-left'];
+    if (modifier === 'slight right') return iconMap['slight-right'];
+    if (modifier === 'straight') return iconMap['straight'];
+  }
+  
+  return iconMap['default'];
+};
+
+// Helper function to format distance
+const formatDistance = (meters) => {
+  if (meters < 1000) {
+    return `${Math.round(meters)} m`;
+  }
+  const miles = meters / 1609.34;
+  if (miles < 10) {
+    return `${miles.toFixed(1)} mi`;
+  }
+  return `${Math.round(miles)} mi`;
+};
+
+// Helper function to format duration
+const formatDuration = (seconds) => {
+  if (seconds < 60) {
+    return `${Math.round(seconds)} sec`;
+  }
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) {
+    return `${minutes} min`;
+  }
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  if (remainingMinutes === 0) {
+    return `${hours} hr`;
+  }
+  return `${hours} hr ${remainingMinutes} min`;
+};
+
+// Helper function to get maneuver description
+const getManeuverDescription = (type, modifier, name) => {
+  const streetName = name && name !== 'unnamed road' ? ` onto ${name}` : '';
+  
+  if (type === 'depart') return `Start${streetName}`;
+  if (type === 'arrive') return 'Arrive at destination';
+  if (type === 'merge') return `Merge${streetName}`;
+  if (type === 'roundabout' || type === 'rotary') return `Take roundabout${streetName}`;
+  if (type === 'fork') return `Take fork${streetName}`;
+  if (type === 'off ramp') return `Take exit${streetName}`;
+  if (type === 'on ramp') return `Take ramp${streetName}`;
+  
+  if (modifier === 'left' || modifier === 'sharp left') return `Turn left${streetName}`;
+  if (modifier === 'right' || modifier === 'sharp right') return `Turn right${streetName}`;
+  if (modifier === 'slight left') return `Bear left${streetName}`;
+  if (modifier === 'slight right') return `Bear right${streetName}`;
+  if (modifier === 'straight') return `Continue straight${streetName}`;
+  if (modifier === 'uturn') return `Make a U-turn${streetName}`;
+  
+  if (type === 'new name' || type === 'continue') return `Continue${streetName}`;
+  
+  return `Continue${streetName}`;
+};
+
+function MapSearchOverlay({ isOpen, onClose, onSearch, onPanelSideChange, activeRoute, navigationInstructions, routeSummary, onClearRoute, isLoadingRoute }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [panelSide, setPanelSide] = useState('left'); // 'left' or 'right'
   const [isDragging, setIsDragging] = useState(false);
@@ -245,6 +399,201 @@ function MapSearchOverlay({ isOpen, onClose, onSearch, onPanelSideChange }) {
     return `translateX(${targetX}px)`;
   };
 
+  // Destination pin icon
+  const DestinationIcon = (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" fill="currentColor"/>
+    </svg>
+  );
+
+  // Render navigation view when route is active
+  const renderNavigationView = () => (
+    <div className="search-overlay-content navigation-view">
+      {/* Route Summary - Using Design System Card */}
+      {routeSummary && (
+        <Card variant="elevated" className="route-summary-card">
+          <div className="route-destination">
+            <div className="destination-icon">
+              {DestinationIcon}
+            </div>
+            <Typography variant="title-small" as="div" className="destination-name">
+              {routeSummary.destinationName}
+            </Typography>
+          </div>
+          <div className="route-stats">
+            <div className="route-stat">
+              <Typography variant="headline-small" as="div" className="stat-value">
+                {formatDuration(routeSummary.duration)}
+              </Typography>
+              <Typography variant="body-tiny" as="div" className="stat-label">
+                ETA
+              </Typography>
+            </div>
+            <div className="route-stat-divider"></div>
+            <div className="route-stat">
+              <Typography variant="headline-small" as="div" className="stat-value">
+                {formatDistance(routeSummary.distance)}
+              </Typography>
+              <Typography variant="body-tiny" as="div" className="stat-label">
+                Distance
+              </Typography>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Turn-by-Turn Instructions */}
+      <div className="section directions-section">
+        <div className="directions-list">
+          {isLoadingRoute ? (
+            <Card variant="default" className="loading-card">
+              <div className="loading-directions">
+                <div className="loading-spinner"></div>
+                <Typography variant="body-small" as="div" className="loading-text">Loading directions...</Typography>
+              </div>
+            </Card>
+          ) : navigationInstructions && navigationInstructions.length > 0 ? (
+            navigationInstructions.map((instruction, index) => (
+              <Card 
+                key={instruction.id} 
+                variant={index === 0 ? 'elevated' : 'default'} 
+                compact
+                className={`direction-card ${index === 0 ? 'direction-card--active' : ''}`}
+              >
+                <div className="direction-item-content">
+                  <div className="direction-number">
+                    <Typography variant="label-small" as="span">{index + 1}</Typography>
+                  </div>
+                  <div className="direction-icon">
+                    {getManeuverIcon(instruction.type, instruction.modifier)}
+                  </div>
+                  <div className="direction-content">
+                    <Typography variant="body-small" as="div" className="direction-instruction">
+                      {getManeuverDescription(instruction.type, instruction.modifier, instruction.name)}
+                    </Typography>
+                    <Typography variant="body-tiny" as="div" className="direction-distance">
+                      {formatDistance(instruction.distance)}
+                    </Typography>
+                  </div>
+                </div>
+              </Card>
+            ))
+          ) : (
+            <Card variant="default" className="no-directions-card">
+              <Typography variant="body-small" as="div" className="no-directions-text">No directions available</Typography>
+            </Card>
+          )}
+        </div>
+      </div>
+
+      {/* Navigation Action Buttons - At the bottom */}
+      <div className="navigation-buttons">
+        <Button 
+          variant="primary" 
+          size="small" 
+          className="start-route-button"
+        >
+          Start
+        </Button>
+        <Button 
+          variant="secondary" 
+          size="small" 
+          onClick={onClearRoute}
+          className="end-route-button"
+        >
+          End Route
+        </Button>
+      </div>
+    </div>
+  );
+
+  // Render search view (default)
+  const renderSearchView = () => (
+    <div className="search-overlay-content">
+      {/* Search Bar */}
+      <form onSubmit={handleSearch} className="search-form">
+        <div className="search-input-container">
+          <svg className="search-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search maps"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <button type="button" className="close-button" onClick={() => setSearchQuery('')}>
+            ✕
+          </button>
+        </div>
+      </form>
+
+      {/* Shortcuts: Home & Work */}
+      <div className="shortcuts-container">
+        {shortcuts.map((shortcut) => (
+          <button
+            key={shortcut.id}
+            className="shortcut-button"
+            onClick={() => handleShortcutClick(shortcut)}
+          >
+            <span className="shortcut-icon-svg">{shortcut.icon}</span>
+            <Typography variant="label-small" as="span" className="shortcut-label">{shortcut.label}</Typography>
+          </button>
+        ))}
+      </div>
+
+      {/* Search Nearby */}
+      <div className="section">
+        <Typography variant="body-tiny" as="h3" className="section-title">SEARCH NEARBY</Typography>
+        <div className="category-grid">
+          {nearbyCategories.map((category) => (
+            <button
+              key={category.id}
+              className="category-button"
+              onClick={() => handleCategoryClick(category)}
+            >
+              <div className="category-icon" style={{ backgroundColor: category.color }}>
+                {category.icon}
+              </div>
+              <Typography variant="body-small" as="span" className="category-label">
+                {category.label}
+              </Typography>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Recent Searches */}
+      <div className="section">
+        <Typography variant="body-tiny" as="h3" className="section-title">RECENT</Typography>
+        <div className="recent-list">
+          {recentSearches.map((place) => (
+            <button
+              key={place.id}
+              className="recent-item"
+              onClick={() => handleRecentClick(place)}
+            >
+              <div className="recent-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <div className="recent-content">
+                <Typography variant="body-small" as="div" className="recent-name">
+                  {place.name}
+                </Typography>
+                <Typography variant="body-tiny" as="div" className="recent-address">
+                  {place.address}
+                </Typography>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div 
       ref={panelRef}
@@ -263,89 +612,8 @@ function MapSearchOverlay({ isOpen, onClose, onSearch, onPanelSideChange }) {
         <div className="drag-handle-indicator"></div>
       </div>
       
-      <div className="search-overlay-content">
-        {/* Search Bar */}
-        <form onSubmit={handleSearch} className="search-form">
-          <div className="search-input-container">
-            <svg className="search-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <input
-              type="text"
-              className="search-input"
-              placeholder="Search maps"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <button type="button" className="close-button" onClick={() => setSearchQuery('')}>
-              ✕
-            </button>
-          </div>
-        </form>
-
-        {/* Shortcuts: Home & Work */}
-        <div className="shortcuts-container">
-          {shortcuts.map((shortcut) => (
-            <button
-              key={shortcut.id}
-              className="shortcut-button"
-              onClick={() => handleShortcutClick(shortcut)}
-            >
-              <span className="shortcut-icon-svg">{shortcut.icon}</span>
-              <Typography variant="label-small" as="span" className="shortcut-label">{shortcut.label}</Typography>
-            </button>
-          ))}
-        </div>
-
-        {/* Search Nearby */}
-        <div className="section">
-          <Typography variant="body-tiny" as="h3" className="section-title">SEARCH NEARBY</Typography>
-          <div className="category-grid">
-            {nearbyCategories.map((category) => (
-              <button
-                key={category.id}
-                className="category-button"
-                onClick={() => handleCategoryClick(category)}
-              >
-                <div className="category-icon" style={{ backgroundColor: category.color }}>
-                  {category.icon}
-                </div>
-                <Typography variant="body-small" as="span" className="category-label">
-                  {category.label}
-                </Typography>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Recent Searches */}
-        <div className="section">
-          <Typography variant="body-tiny" as="h3" className="section-title">RECENT</Typography>
-          <div className="recent-list">
-            {recentSearches.map((place) => (
-              <button
-                key={place.id}
-                className="recent-item"
-                onClick={() => handleRecentClick(place)}
-              >
-                <div className="recent-icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-                <div className="recent-content">
-                  <Typography variant="body-small" as="div" className="recent-name">
-                    {place.name}
-                  </Typography>
-                  <Typography variant="body-tiny" as="div" className="recent-address">
-                    {place.address}
-                  </Typography>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+      {/* Conditionally render navigation view or search view */}
+      {activeRoute && navigationInstructions ? renderNavigationView() : renderSearchView()}
     </div>
   );
 }

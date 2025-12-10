@@ -30,6 +30,8 @@ function NavigationApp() {
   const [isLoadingRoute, setIsLoadingRoute] = useState(false);
   const [overlayPanelSide, setOverlayPanelSide] = useState('left'); // Track which side the overlay is on
   const [routeCoordinates, setRouteCoordinates] = useState(null);
+  const [navigationInstructions, setNavigationInstructions] = useState(null);
+  const [routeSummary, setRouteSummary] = useState(null);
 
   // Function to update SVG route path based on current map view
   const updateSvgRoute = useCallback(() => {
@@ -394,7 +396,15 @@ function NavigationApp() {
 
   // Effect to register map event listeners for SVG route updates
   useEffect(() => {
-    if (!map.current || !routeCoordinates || !routeSvgRef.current) return;
+    // If no route coordinates, clear any existing SVG paths
+    if (!routeCoordinates) {
+      if (routeSvgRef.current) {
+        routeSvgRef.current.querySelectorAll('path').forEach(path => path.remove());
+      }
+      return;
+    }
+    
+    if (!map.current || !routeSvgRef.current) return;
     
     const svgNS = 'http://www.w3.org/2000/svg';
     const svg = routeSvgRef.current;
@@ -436,6 +446,10 @@ function NavigationApp() {
         map.current.off('rotate', handleMapMove);
         map.current.off('pitch', handleMapMove);
       }
+      // Also remove SVG paths on cleanup
+      if (routeSvgRef.current) {
+        routeSvgRef.current.querySelectorAll('path').forEach(path => path.remove());
+      }
     };
   }, [routeCoordinates, updateSvgRoute]);
 
@@ -453,11 +467,11 @@ function NavigationApp() {
     }
   };
 
-  // Function to fetch actual route from OSRM routing API
-  const fetchRouteGeometry = async (start, end) => {
+  // Function to fetch actual route from OSRM routing API with turn-by-turn instructions
+  const fetchRouteGeometry = async (start, end, destinationName) => {
     try {
-      // OSRM API endpoint (free public instance)
-      const url = `https://router.project-osrm.org/route/v1/driving/${start.longitude},${start.latitude};${end.longitude},${end.latitude}?overview=full&geometries=geojson`;
+      // OSRM API endpoint (free public instance) with steps=true for turn-by-turn
+      const url = `https://router.project-osrm.org/route/v1/driving/${start.longitude},${start.latitude};${end.longitude},${end.latitude}?overview=full&geometries=geojson&steps=true&annotations=true`;
       
       console.log('Fetching route from OSRM:', url);
       
@@ -465,14 +479,55 @@ function NavigationApp() {
       const data = await response.json();
       
       if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+        const route = data.routes[0];
+        
+        // Extract turn-by-turn instructions from steps
+        const instructions = [];
+        if (route.legs && route.legs.length > 0) {
+          route.legs.forEach(leg => {
+            if (leg.steps) {
+              leg.steps.forEach((step, index) => {
+                // Skip the last "arrive" step as we'll add it separately
+                if (step.maneuver) {
+                  instructions.push({
+                    id: index,
+                    type: step.maneuver.type,
+                    modifier: step.maneuver.modifier || '',
+                    name: step.name || 'unnamed road',
+                    distance: step.distance, // in meters
+                    duration: step.duration, // in seconds
+                    location: step.maneuver.location
+                  });
+                }
+              });
+            }
+          });
+        }
+        
+        // Store instructions in state
+        setNavigationInstructions(instructions);
+        
+        // Store route summary
+        setRouteSummary({
+          distance: route.distance, // total distance in meters
+          duration: route.duration, // total duration in seconds
+          destinationName: destinationName
+        });
+        
+        console.log('Turn-by-turn instructions:', instructions);
+        
         // Return the route geometry coordinates
-        return data.routes[0].geometry.coordinates;
+        return route.geometry.coordinates;
       } else {
         console.warn('OSRM routing failed, using fallback');
+        setNavigationInstructions(null);
+        setRouteSummary(null);
         return createFallbackRoute(start, end);
       }
     } catch (error) {
       console.error('Error fetching route:', error);
+      setNavigationInstructions(null);
+      setRouteSummary(null);
       return createFallbackRoute(start, end);
     }
   };
@@ -520,8 +575,8 @@ function NavigationApp() {
     // Get current car position (using fake location)
     const currentLocation = FAKE_CURRENT_LOCATION;
     
-    // Fetch actual route geometry from OSRM API
-    const fetchedRouteCoordinates = await fetchRouteGeometry(currentLocation, destination);
+    // Fetch actual route geometry from OSRM API with turn-by-turn instructions
+    const fetchedRouteCoordinates = await fetchRouteGeometry(currentLocation, destination, destination.name);
     
     setIsLoadingRoute(false);
     
@@ -603,6 +658,37 @@ function NavigationApp() {
     }
   };
 
+  // Function to clear the active route and return to default view
+  const clearRoute = () => {
+    // Remove route coordinates (clears SVG route)
+    setRouteCoordinates(null);
+    
+    // Clear navigation instructions and summary
+    setNavigationInstructions(null);
+    setRouteSummary(null);
+    
+    // Remove destination marker
+    if (destinationMarker.current) {
+      destinationMarker.current.remove();
+      destinationMarker.current = null;
+    }
+    
+    // Clear active route state
+    setActiveRoute(null);
+    setSearchDestination(null);
+    
+    // Reset map view to current location
+    if (map.current && mapLoaded) {
+      map.current.easeTo({
+        center: [FAKE_CURRENT_LOCATION.longitude, FAKE_CURRENT_LOCATION.latitude],
+        zoom: 16,
+        duration: 1000
+      });
+    }
+    
+    console.log('Route cleared');
+  };
+
   // Handle overlay panel side change
   const handlePanelSideChange = (newSide) => {
     console.log('Overlay panel moved to:', newSide);
@@ -642,6 +728,11 @@ function NavigationApp() {
         onClose={() => setIsSearchOpen(false)}
         onSearch={handleSearch}
         onPanelSideChange={handlePanelSideChange}
+        activeRoute={activeRoute}
+        navigationInstructions={navigationInstructions}
+        routeSummary={routeSummary}
+        onClearRoute={clearRoute}
+        isLoadingRoute={isLoadingRoute}
       />
       {!mapLoaded && (
         <div className="map-loading">

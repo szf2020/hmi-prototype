@@ -305,6 +305,259 @@
   background: var(--surface-secondary-enabled);
 }
 
+/* ================================ */
+/* Navigation View Styles           */
+/* ================================ */
+
+.navigation-view {
+  padding-top: var(--spacing-16);
+  gap: var(--spacing-16);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Navigation Buttons Container - At the bottom of navigation view */
+.navigation-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-12);
+  flex-shrink: 0;
+}
+
+.start-route-button.ds-button,
+.end-route-button.ds-button {
+  width: 100%;
+}
+
+/* Route Summary Card - Override DS Card for custom styling */
+.route-summary-card.ds-card {
+  background: linear-gradient(135deg, var(--surface-primary-enabled) 0%, var(--surface-primary-pressed) 100%);
+  border: none;
+  margin-bottom: 0;
+  padding: 0;
+}
+
+.route-summary-card.ds-card .ds-card__body {
+  padding: var(--spacing-24);
+}
+
+.route-destination {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-16);
+  margin-bottom: var(--spacing-20);
+  padding-bottom: var(--spacing-20);
+  border-bottom: 1px solid var(--surface-secondary-selected);
+}
+
+.destination-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--borderRadius-circle, 50%);
+  background-color: var(--surface-secondary-selected);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--onSurface-primary-enabled);
+  flex-shrink: 0;
+}
+
+.destination-name {
+  color: var(--onSurface-primary-enabled);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.route-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-24);
+}
+
+.route-stat {
+  text-align: center;
+  flex: 1;
+}
+
+.stat-value {
+  color: var(--onSurface-primary-enabled);
+  margin-bottom: var(--spacing-4);
+}
+
+.stat-label {
+  color: var(--onSurface-primary-inactive);
+  text-transform: uppercase;
+  letter-spacing: var(--letterSpacing-wide);
+}
+
+.route-stat-divider {
+  width: 1px;
+  height: 52px;
+  background-color: var(--surface-secondary-selected);
+  flex-shrink: 0;
+}
+
+/* Directions Section - Takes remaining space to push button to bottom */
+.directions-section {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin-bottom: 0;
+}
+
+/* Directions List */
+.directions-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  padding-top: var(--spacing-12);
+  padding-bottom: var(--spacing-8);
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.directions-list::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Direction Card - Override DS Card styles */
+.direction-card.ds-card {
+  border: 1px solid var(--elements-divider);
+  background-color: var(--surface-tertiary-enabled);
+  transition: all var(--motion-duration-fast, 150ms) var(--motion-easing-standard);
+  padding: 0;
+}
+
+.direction-card.ds-card .ds-card__body {
+  padding: var(--spacing-16);
+}
+
+/* Active direction card (first item) */
+.direction-card--active.ds-card {
+  background-color: var(--surface-secondary-enabled);
+  border: 2px solid var(--surface-primary-enabled);
+}
+
+.direction-card--active.ds-card .ds-card__body {
+  padding: calc(var(--spacing-16) - 1px); /* Account for thicker border */
+}
+
+.direction-item-content {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-12);
+}
+
+.direction-number {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--borderRadius-circle, 50%);
+  background-color: var(--surface-secondary-enabled);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--onSurface-primary-inactive);
+}
+
+.direction-card--active .direction-number {
+  background-color: var(--surface-primary-enabled);
+  color: var(--onSurface-primary-enabled);
+}
+
+.direction-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--onSurface-primary-enabled);
+}
+
+.direction-card--active .direction-icon {
+  color: var(--surface-primary-enabled);
+}
+
+.direction-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.direction-instruction {
+  color: var(--onSurface-primary-enabled);
+  margin-bottom: var(--spacing-4);
+}
+
+.direction-distance {
+  color: var(--onSurface-primary-inactive);
+}
+
+/* Loading Card */
+.loading-card.ds-card {
+  background-color: var(--surface-tertiary-enabled);
+  padding: 0;
+}
+
+.loading-card.ds-card .ds-card__body {
+  padding: var(--spacing-32);
+}
+
+.loading-directions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-16);
+  color: var(--onSurface-primary-inactive);
+}
+
+.loading-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--surface-secondary-enabled);
+  border-top-color: var(--surface-primary-enabled);
+  border-radius: var(--borderRadius-circle, 50%);
+  animation: spin 1s var(--motion-easing-standard) infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-text {
+  color: var(--onSurface-primary-inactive);
+}
+
+/* No Directions Card */
+.no-directions-card.ds-card {
+  background-color: var(--surface-tertiary-enabled);
+  padding: 0;
+}
+
+.no-directions-card.ds-card .ds-card__body {
+  padding: var(--spacing-32);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.no-directions-text {
+  color: var(--onSurface-primary-inactive);
+  text-align: center;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .map-search-overlay {

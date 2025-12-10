@@ -451,6 +451,27 @@
   gap: var(--spacing-12, 12px);
 }
 
+.radio-station-item-clickable {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-12, 12px);
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+}
+
+.radio-station-item-clickable:focus-visible {
+  outline: 2px solid var(--surface-primary-enabled);
+  outline-offset: 2px;
+  border-radius: var(--borderRadius-4, 4px);
+}
+
 .radio-station-item-logo {
   width: 48px;
   height: 48px;

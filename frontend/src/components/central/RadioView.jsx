@@ -365,35 +365,41 @@ const RadioView = () => {
               {displayStations.map((station) => (
                 <Card
                   key={station.stationuuid}
-                  variant="interactive"
+                  variant="default"
                   className={`radio-station-item ${currentStation?.stationuuid === station.stationuuid ? 'is-playing' : ''}`}
-                  onClick={() => handleStationClick(station)}
                   compact
                 >
                   <div className="radio-station-item-content">
-                    <div className="radio-station-item-logo">
-                      <img
-                        src={station.favicon || FALLBACK_LOGO}
-                        alt={station.name}
-                        onError={(e) => { e.target.src = FALLBACK_LOGO; }}
-                      />
-                      {currentStation?.stationuuid === station.stationuuid && isPlaying && (
-                        <div className="radio-playing-indicator">
-                          <span></span>
-                          <span></span>
-                          <span></span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="radio-station-item-info">
-                      <Typography variant="body-medium" className="radio-station-item-name" truncate>
-                        {station.name}
-                      </Typography>
-                      <Typography variant="label-small" className="radio-station-item-meta">
-                        {getStationTags(station)}
-                        {station.bitrate > 0 && ` • ${formatBitrate(station.bitrate)}`}
-                      </Typography>
-                    </div>
+                    <button 
+                      className="radio-station-item-clickable"
+                      onClick={() => handleStationClick(station)}
+                      type="button"
+                      aria-label={`Play ${station.name}`}
+                    >
+                      <div className="radio-station-item-logo">
+                        <img
+                          src={station.favicon || FALLBACK_LOGO}
+                          alt={station.name}
+                          onError={(e) => { e.target.src = FALLBACK_LOGO; }}
+                        />
+                        {currentStation?.stationuuid === station.stationuuid && isPlaying && (
+                          <div className="radio-playing-indicator">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="radio-station-item-info">
+                        <Typography variant="body-medium" className="radio-station-item-name" truncate>
+                          {station.name}
+                        </Typography>
+                        <Typography variant="label-small" className="radio-station-item-meta">
+                          {getStationTags(station)}
+                          {station.bitrate > 0 && ` • ${formatBitrate(station.bitrate)}`}
+                        </Typography>
+                      </div>
+                    </button>
                     <IconButton
                       icon={
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -406,10 +412,7 @@ const RadioView = () => {
                       }
                       label={isFavorite(station) ? 'Remove from favorites' : 'Add to favorites'}
                       className={`radio-station-favorite ${isFavorite(station) ? 'is-favorite' : ''}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleFavorite(station);
-                      }}
+                      onClick={() => toggleFavorite(station)}
                     />
                   </div>
                 </Card>
