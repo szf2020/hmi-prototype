@@ -456,9 +456,9 @@ function NavigationApp() {
   // Predefined destinations for simulation
   const DESTINATIONS = {
     'Home': {
-      name: 'Home - Foster City',
-      latitude: 37.5585,
-      longitude: -122.2711
+      name: 'Alamo Square, San Francisco',
+      latitude: 37.7764,
+      longitude: -122.4350
     },
     'Work': {
       name: 'Work',

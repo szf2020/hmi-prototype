@@ -319,14 +319,14 @@
 /* Navigation Buttons Container - At the bottom of navigation view */
 .navigation-buttons {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: var(--spacing-12);
   flex-shrink: 0;
 }
 
 .start-route-button.ds-button,
 .end-route-button.ds-button {
-  width: 100%;
+  flex: 1;
 }
 
 /* Route Summary Card - Override DS Card for custom styling */
