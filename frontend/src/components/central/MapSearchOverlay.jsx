@@ -416,7 +416,7 @@ function MapSearchOverlay({ isOpen, onClose, onSearch, onPanelSideChange, active
             <div className="destination-icon">
               {DestinationIcon}
             </div>
-            <Typography variant="title-small" as="div" className="destination-name">
+            <Typography variant="headline-small" as="div" className="destination-name">
               {routeSummary.destinationName}
             </Typography>
           </div>
@@ -501,7 +501,7 @@ function MapSearchOverlay({ isOpen, onClose, onSearch, onPanelSideChange, active
           onClick={onClearRoute}
           className="end-route-button"
         >
-          End Route
+          Cancel
         </Button>
       </div>
     </div>
