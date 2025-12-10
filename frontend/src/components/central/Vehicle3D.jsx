@@ -202,6 +202,11 @@ const MODEL_SCALE_CONFIG = {
     positionOffset: { x: 0, y: 0, z: 0 },
     rotation: { x: 0, y: 0, z: 0 },
   },
+  '/models/macan.glb': {
+    targetSize: 4, // Porsche Macan - compact luxury SUV
+    positionOffset: { x: 0.4, y: -0.13, z: 0 }, // Adjust after testing
+    rotation: { x: 0, y: 0, z: 0 }, // Adjust after testing
+  },
 };
 
 // Fallback scale and position if model not in config

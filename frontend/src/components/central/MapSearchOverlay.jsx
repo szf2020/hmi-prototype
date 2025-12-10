@@ -156,7 +156,32 @@ const getManeuverDescription = (type, modifier, name) => {
   return `Continue${streetName}`;
 };
 
-function MapSearchOverlay({ isOpen, onClose, onSearch, onPanelSideChange, activeRoute, navigationInstructions, routeSummary, onClearRoute, isLoadingRoute }) {
+// Category colors for result icons
+const CATEGORY_COLORS = {
+  'Food': '#f79009',
+  'Coffee': '#c19b5f',
+  'Charging': '#12b76a',
+  'Shopping': '#c26eb4',
+  'Parking': '#4a7fb8',
+  'Car Wash': '#7e5fc2',
+  'default': '#335FFF'
+};
+
+function MapSearchOverlay({ 
+  isOpen, 
+  onClose, 
+  onSearch, 
+  onSelectDestination,
+  searchResults = [],
+  isSearching = false,
+  activeCategory = null,
+  onPanelSideChange, 
+  activeRoute, 
+  navigationInstructions, 
+  routeSummary, 
+  onClearRoute, 
+  isLoadingRoute 
+}) {
   const [searchQuery, setSearchQuery] = useState('');
   const [panelSide, setPanelSide] = useState('left'); // 'left' or 'right'
   const [isDragging, setIsDragging] = useState(false);
@@ -274,24 +299,36 @@ function MapSearchOverlay({ isOpen, onClose, onSearch, onPanelSideChange, active
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      onSearch(searchQuery);
+      onSearch(searchQuery, false); // false = not a category search
       // Keep overlay open
     }
   };
 
   const handleCategoryClick = (category) => {
-    onSearch(category.label);
+    onSearch(category.label, true); // true = category search
     // Keep overlay open
   };
 
   const handleRecentClick = (place) => {
-    onSearch(place.address);
+    onSearch(place.address, false);
     // Keep overlay open
   };
 
   const handleShortcutClick = (shortcut) => {
-    onSearch(shortcut.label);
+    onSearch(shortcut.label, false); // Shortcuts go directly to predefined destinations
     // Keep overlay open
+  };
+
+  // Handle clicking on a search result
+  const handleResultClick = (result) => {
+    if (onSelectDestination) {
+      onSelectDestination(result);
+    }
+  };
+
+  // Handle back button to clear results and return to search view
+  const handleBackToSearch = () => {
+    onSearch('', false); // This will clear results
   };
 
   // Drag handlers
@@ -507,6 +544,86 @@ function MapSearchOverlay({ isOpen, onClose, onSearch, onPanelSideChange, active
     </div>
   );
 
+  // Render search results view
+  const renderSearchResultsView = () => {
+    const categoryColor = CATEGORY_COLORS[activeCategory] || CATEGORY_COLORS.default;
+    
+    return (
+      <div className="search-overlay-content">
+        {/* Header with back button */}
+        <div className="results-header">
+          <button className="back-button" onClick={handleBackToSearch}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          <Typography variant="headline-small" as="h2" className="results-title">
+            {activeCategory || 'Search Results'}
+          </Typography>
+          <Typography variant="body-tiny" as="span" className="results-count">
+            {searchResults.length} results
+          </Typography>
+        </div>
+
+        {/* Loading state */}
+        {isSearching && (
+          <div className="search-loading">
+            <div className="loading-spinner"></div>
+            <Typography variant="body-small" as="span">Searching nearby...</Typography>
+          </div>
+        )}
+
+        {/* Results list */}
+        {!isSearching && searchResults.length > 0 && (
+          <div className="search-results-list">
+            {searchResults.map((result, index) => (
+              <button
+                key={result.id}
+                className="search-result-item"
+                onClick={() => handleResultClick(result)}
+              >
+                <div 
+                  className="result-number" 
+                  style={{ backgroundColor: categoryColor }}
+                >
+                  <Typography variant="label-small" as="span">{index + 1}</Typography>
+                </div>
+                <div className="result-content">
+                  <Typography variant="body-small" as="div" className="result-name">
+                    {result.name}
+                  </Typography>
+                  <Typography variant="body-tiny" as="div" className="result-address">
+                    {result.address}
+                  </Typography>
+                  {result.type && (
+                    <Typography variant="body-tiny" as="div" className="result-type">
+                      {result.type.replace(/_/g, ' ')}
+                    </Typography>
+                  )}
+                </div>
+                <div className="result-arrow">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* No results */}
+        {!isSearching && searchResults.length === 0 && (
+          <div className="no-results">
+            <Typography variant="body-small" as="div">No results found nearby</Typography>
+            <Typography variant="body-tiny" as="div" className="no-results-hint">
+              Try a different category or search term
+            </Typography>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // Render search view (default)
   const renderSearchView = () => (
     <div className="search-overlay-content">
@@ -612,8 +729,13 @@ function MapSearchOverlay({ isOpen, onClose, onSearch, onPanelSideChange, active
         <div className="drag-handle-indicator"></div>
       </div>
       
-      {/* Conditionally render navigation view or search view */}
-      {activeRoute && navigationInstructions ? renderNavigationView() : renderSearchView()}
+      {/* Conditionally render navigation view, search results, or search view */}
+      {activeRoute && navigationInstructions 
+        ? renderNavigationView() 
+        : (isSearching || searchResults.length > 0 || activeCategory)
+          ? renderSearchResultsView()
+          : renderSearchView()
+      }
     </div>
   );
 }

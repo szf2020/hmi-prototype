@@ -95,7 +95,7 @@ function CameraApp() {
                 <img 
                   src={activeCamera === 'rear' ? '/images/dashcam/back.png' : '/images/dashcam/front.png'} 
                   alt={`${cameras.find(cam => cam.id === activeCamera)?.label} camera view`} 
-                  className="camera-image"
+                  className={`camera-image ${activeCamera === 'rear' ? 'camera-image--mirrored' : ''}`}
                 />
                 <Typography variant="label-small" className="camera-label-overlay">{cameras.find(cam => cam.id === activeCamera)?.label}</Typography>
               </div>

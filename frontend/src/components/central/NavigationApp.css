@@ -196,6 +196,26 @@
   animation: pulse-marker 2s ease-in-out infinite;
 }
 
+/* POI markers for search results */
+.poi-marker {
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.poi-marker:hover {
+  transform: scale(1.15);
+  z-index: 10;
+}
+
+.poi-marker svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+}
+
 /* Pulsing animation for destination marker */
 @keyframes pulse-marker {
   0%, 100% {

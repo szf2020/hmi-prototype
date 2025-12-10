@@ -14,6 +14,87 @@ const FAKE_CURRENT_LOCATION = {
   longitude: -122.3255
 };
 
+// ===== CATEGORY TO OSM TAG MAPPING =====
+const CATEGORY_TAG_MAP = {
+  'Food': 'amenity:restaurant',
+  'Coffee': 'amenity:cafe',
+  'Charging': 'amenity:charging_station',
+  'Shopping': 'shop',
+  'Parking': 'amenity:parking',
+  'Car Wash': 'amenity:car_wash'
+};
+
+// ===== CATEGORY COLORS (matching MapSearchOverlay) =====
+const CATEGORY_COLORS = {
+  'Food': '#f79009',
+  'Coffee': '#c19b5f',
+  'Charging': '#12b76a',
+  'Shopping': '#c26eb4',
+  'Parking': '#4a7fb8',
+  'Car Wash': '#7e5fc2',
+  'default': '#335FFF'
+};
+
+// ===== PHOTON SEARCH API =====
+// Helper to format Photon address from properties
+const formatPhotonAddress = (props) => {
+  const parts = [];
+  if (props.housenumber && props.street) {
+    parts.push(`${props.housenumber} ${props.street}`);
+  } else if (props.street) {
+    parts.push(props.street);
+  }
+  if (props.city) parts.push(props.city);
+  if (props.state) parts.push(props.state);
+  if (props.postcode) parts.push(props.postcode);
+  
+  return parts.join(', ') || props.name || 'Address unavailable';
+};
+
+// Search for places using Photon API
+const searchPhoton = async (query, isCategory = false) => {
+  try {
+    const params = new URLSearchParams({
+      q: isCategory ? query : query,
+      limit: 10,
+      lat: FAKE_CURRENT_LOCATION.latitude,
+      lon: FAKE_CURRENT_LOCATION.longitude,
+      lang: 'en'
+    });
+
+    // Add OSM tag filter if searching by category
+    if (isCategory && CATEGORY_TAG_MAP[query]) {
+      params.append('osm_tag', CATEGORY_TAG_MAP[query]);
+    }
+
+    const url = `https://photon.komoot.io/api/?${params.toString()}`;
+    console.log('Searching Photon:', url);
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Photon API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    // Photon returns GeoJSON FeatureCollection
+    return data.features.map((feature, index) => ({
+      id: feature.properties.osm_id || `result-${index}`,
+      name: feature.properties.name || feature.properties.street || 'Unknown',
+      address: formatPhotonAddress(feature.properties),
+      latitude: feature.geometry.coordinates[1],  // GeoJSON is [lon, lat]
+      longitude: feature.geometry.coordinates[0],
+      type: feature.properties.osm_value || feature.properties.osm_key,
+      category: feature.properties.osm_key
+    }));
+
+  } catch (error) {
+    console.error('Photon search failed:', error);
+    return [];
+  }
+};
+
 function NavigationApp() {
   const mapContainer = useRef(null);
   const map = useRef(null);
@@ -22,6 +103,7 @@ function NavigationApp() {
   const destinationMarker = useRef(null);
   const isInitialized = useRef(false);
   const routeSvgRef = useRef(null);
+  const poiMarkers = useRef([]); // Array to track POI markers for cleanup
   const [mapLoaded, setMapLoaded] = useState(false);
   const [locationStatus, setLocationStatus] = useState('requesting');
   const [isSearchOpen, setIsSearchOpen] = useState(true); // Show by default
@@ -32,6 +114,9 @@ function NavigationApp() {
   const [routeCoordinates, setRouteCoordinates] = useState(null);
   const [navigationInstructions, setNavigationInstructions] = useState(null);
   const [routeSummary, setRouteSummary] = useState(null);
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [activeCategory, setActiveCategory] = useState(null); // Track which category is active
 
   // Function to update SVG route path based on current map view
   const updateSvgRoute = useCallback(() => {
@@ -389,6 +474,10 @@ function NavigationApp() {
         carMarker.current = null;
       }
       
+      // Remove POI markers
+      poiMarkers.current.forEach(marker => marker.remove());
+      poiMarkers.current = [];
+      
       globalMapInstance = null;
       isInitialized.current = false;
     };
@@ -648,14 +737,169 @@ function NavigationApp() {
     console.log(`Route drawn to ${destinationName} (overlay on ${overlayPanelSide} side)`);
   };
 
-  const handleSearch = async (query) => {
-    console.log('Searching for:', query);
-    setSearchDestination(query);
-    
-    // If it's a known destination (Home or Work), draw the route
-    if (DESTINATIONS[query]) {
-      await drawRoute(query);
+  // ===== POI MARKER MANAGEMENT =====
+  // Clear all POI markers from the map
+  const clearPoiMarkers = useCallback(() => {
+    poiMarkers.current.forEach(marker => {
+      marker.remove();
+    });
+    poiMarkers.current = [];
+  }, []);
+
+  // Display POI markers on the map for search results
+  const displayPoiMarkers = useCallback((results, category) => {
+    if (!map.current || !mapLoaded) return;
+
+    // Clear existing POI markers first
+    clearPoiMarkers();
+
+    const color = CATEGORY_COLORS[category] || CATEGORY_COLORS.default;
+
+    results.forEach((result, index) => {
+      // Create POI marker element
+      const poiElement = document.createElement('div');
+      poiElement.className = 'poi-marker';
+      poiElement.innerHTML = `
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="18" cy="18" r="16" fill="${color}" stroke="#ffffff" stroke-width="2"/>
+          <text x="18" y="22" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="600">${index + 1}</text>
+        </svg>
+      `;
+
+      const marker = new maplibregl.Marker({
+        element: poiElement,
+        anchor: 'center'
+      })
+        .setLngLat([result.longitude, result.latitude])
+        .addTo(map.current);
+
+      poiMarkers.current.push(marker);
+    });
+
+    // Fit map to show all markers plus current location
+    if (results.length > 0) {
+      const bounds = new maplibregl.LngLatBounds();
+      bounds.extend([FAKE_CURRENT_LOCATION.longitude, FAKE_CURRENT_LOCATION.latitude]);
+      results.forEach(result => {
+        bounds.extend([result.longitude, result.latitude]);
+      });
+
+      const overlayPadding = 550;
+      const padding = overlayPanelSide === 'left' 
+        ? { top: 100, bottom: 100, left: overlayPadding, right: 100 }
+        : { top: 100, bottom: 100, left: 100, right: overlayPadding };
+      
+      map.current.fitBounds(bounds, {
+        padding,
+        duration: 1000,
+        maxZoom: 14
+      });
     }
+
+    console.log(`Displayed ${results.length} POI markers for ${category}`);
+  }, [mapLoaded, overlayPanelSide, clearPoiMarkers]);
+
+  // Handle search from overlay (both text search and category search)
+  const handleSearch = async (query, isCategory = false) => {
+    console.log('Searching for:', query, isCategory ? '(category)' : '');
+    
+    // If it's a known shortcut destination (Home or Work), draw the route directly
+    if (!isCategory && DESTINATIONS[query]) {
+      setSearchDestination(query);
+      clearPoiMarkers();
+      setSearchResults([]);
+      setActiveCategory(null);
+      await drawRoute(query);
+      return;
+    }
+
+    // Otherwise, search using Photon
+    setIsSearching(true);
+    setSearchResults([]);
+    setActiveCategory(isCategory ? query : null);
+    
+    const results = await searchPhoton(query, isCategory);
+    
+    setSearchResults(results);
+    setIsSearching(false);
+    
+    // Display POI markers on the map
+    if (results.length > 0) {
+      displayPoiMarkers(results, isCategory ? query : 'default');
+    }
+    
+    console.log('Search results:', results);
+  };
+
+  // Handle selecting a destination from search results
+  const handleSelectDestination = async (result) => {
+    console.log('Selected destination:', result);
+    
+    // Clear POI markers and search results
+    clearPoiMarkers();
+    setSearchResults([]);
+    setActiveCategory(null);
+    
+    setSearchDestination(result.name);
+    setIsLoadingRoute(true);
+
+    // Get current car position
+    const currentLocation = FAKE_CURRENT_LOCATION;
+    
+    // Fetch route geometry
+    const fetchedRouteCoordinates = await fetchRouteGeometry(currentLocation, result, result.name);
+    
+    setIsLoadingRoute(false);
+    setRouteCoordinates(fetchedRouteCoordinates);
+
+    // Remove existing destination marker if any
+    if (destinationMarker.current) {
+      destinationMarker.current.remove();
+      destinationMarker.current = null;
+    }
+
+    // Create destination marker
+    const destElement = document.createElement('div');
+    destElement.className = 'destination-marker';
+    destElement.innerHTML = `
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <foreignObject x="-70" y="-70" width="188" height="188">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="backdrop-filter:blur(35px);clip-path:url(#bgblur_dest_marker);height:100%;width:100%"></div>
+        </foreignObject>
+        <g data-figma-bg-blur-radius="70">
+          <rect width="48" height="48" rx="24" fill="#335FFF"/>
+          <circle cx="24" cy="24" r="12" fill="#EFF4F9"/>
+        </g>
+        <defs>
+          <clipPath id="bgblur_dest_marker" transform="translate(70 70)">
+            <rect width="48" height="48" rx="24"/>
+          </clipPath>
+        </defs>
+      </svg>
+    `;
+
+    destinationMarker.current = new maplibregl.Marker({
+      element: destElement,
+      anchor: 'center',
+      rotationAlignment: 'map',
+      pitchAlignment: 'map'
+    })
+      .setLngLat([result.longitude, result.latitude])
+      .addTo(map.current);
+
+    // Fit map to show route
+    const bounds = new maplibregl.LngLatBounds();
+    bounds.extend([currentLocation.longitude, currentLocation.latitude]);
+    bounds.extend([result.longitude, result.latitude]);
+    
+    const overlayPadding = 550;
+    const padding = overlayPanelSide === 'left' 
+      ? { top: 100, bottom: 100, left: overlayPadding, right: 100 }
+      : { top: 100, bottom: 100, left: 100, right: overlayPadding };
+    
+    map.current.fitBounds(bounds, { padding, duration: 1000 });
+
+    setActiveRoute(result.name);
   };
 
   // Function to clear the active route and return to default view
@@ -672,6 +916,11 @@ function NavigationApp() {
       destinationMarker.current.remove();
       destinationMarker.current = null;
     }
+    
+    // Clear POI markers and search results
+    clearPoiMarkers();
+    setSearchResults([]);
+    setActiveCategory(null);
     
     // Clear active route state
     setActiveRoute(null);
@@ -727,6 +976,10 @@ function NavigationApp() {
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
         onSearch={handleSearch}
+        onSelectDestination={handleSelectDestination}
+        searchResults={searchResults}
+        isSearching={isSearching}
+        activeCategory={activeCategory}
         onPanelSideChange={handlePanelSideChange}
         activeRoute={activeRoute}
         navigationInstructions={navigationInstructions}

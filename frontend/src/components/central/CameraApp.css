@@ -281,6 +281,10 @@
   border-radius: inherit;
 }
 
+.camera-image--mirrored {
+  transform: scaleX(-1);
+}
+
 .camera-label-overlay {
   position: absolute;
   top: var(--spacing-16);
