@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useHMI } from '../contexts/HMIContext';
-import SettingsApp from './central/SettingsApp';
+import StatusBar from './central/StatusBar';
+import Environment3D from './central/Environment3D';
+import TheaterApp from './central/TheaterApp';
 import './PassengerDisplay.css';
 
 function PassengerDisplay() {
-  const { state, registerDisplay, updateState, connected } = useHMI();
-  const [activeSection, setActiveSection] = useState('entertainment');
+  const { registerDisplay } = useHMI();
 
   useEffect(() => {
     registerDisplay('passenger');
@@ -13,287 +14,35 @@ function PassengerDisplay() {
 
   return (
     <div className="passenger-display">
-      <div className="passenger-header">
-        <div className={`connection-indicator ${connected ? 'connected' : 'disconnected'}`}>
-          {connected ? '● Connected' : '○ Disconnected'}
-        </div>
-        <h2>PASSENGER DISPLAY</h2>
-        <div className="brightness-control">
-          <span>☀️</span>
-          <input
-            type="range"
-            min="20"
-            max="100"
-            value={state.brightness}
-            onChange={(e) => updateState({ brightness: parseInt(e.target.value) })}
-            className="brightness-slider"
-          />
-        </div>
-      </div>
+      <Environment3D />
+      <StatusBar />
+      
+      {/* Passenger Login - positioned over status bar */}
+      <button className="passenger-login">
+        <svg width="32" height="32" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g clipPath="url(#clip0_passenger_login)">
+            <g clipPath="url(#clip1_passenger_login)">
+              <path d="M15 0C23.2795 3.58142e-07 30 6.7206 30 15C30 23.2795 23.2795 30 15 30C6.7206 30 3.58119e-07 23.2795 0 15C0 6.7206 6.7206 0 15 0ZM15 2.5C8.08825 2.5 2.5 8.08825 2.5 15C2.5 18.2077 3.70461 21.1295 5.68555 23.3408C7.17774 21.5871 10.5812 20 15 20C19.4237 20 22.8252 21.5824 24.3135 23.3408C26.2947 21.1294 27.5 18.208 27.5 15C27.5 8.08825 21.9118 2.5 15 2.5ZM15 6.5293C17.8235 6.5293 20.0439 8.98547 20.0439 11.9561C20.0439 15.1178 17.8382 17.5295 15 17.5C12.1765 17.4706 9.97083 15.1178 9.95605 11.9561C9.94136 8.98547 12.1765 6.5293 15 6.5293Z" fill="white" fillOpacity="0.9"/>
+            </g>
+          </g>
+          <defs>
+            <clipPath id="clip0_passenger_login">
+              <rect width="30" height="30" rx="15" fill="white"/>
+            </clipPath>
+            <clipPath id="clip1_passenger_login">
+              <rect width="30" height="30" fill="white"/>
+            </clipPath>
+          </defs>
+        </svg>
+        <span className="passenger-login-text">Login</span>
+      </button>
 
-      <div className="section-navigation">
-        <button
-          className={`section-button ${activeSection === 'entertainment' ? 'active' : ''}`}
-          onClick={() => setActiveSection('entertainment')}
-        >
-          🎬 Entertainment
-        </button>
-        <button
-          className={`section-button ${activeSection === 'comfort' ? 'active' : ''}`}
-          onClick={() => setActiveSection('comfort')}
-        >
-          🛋️ Comfort
-        </button>
-        <button
-          className={`section-button ${activeSection === 'info' ? 'active' : ''}`}
-          onClick={() => setActiveSection('info')}
-        >
-          ℹ️ Info
-        </button>
-        <button
-          className={`section-button ${activeSection === 'settings' ? 'active' : ''}`}
-          onClick={() => setActiveSection('settings')}
-        >
-          ⚙️ Settings
-        </button>
-      </div>
-
-      <div className="passenger-content">
-        {activeSection === 'entertainment' && (
-          <div className="entertainment-section">
-            <div className="video-player">
-              <div className="video-screen">
-                <div className="video-placeholder">
-                  {state.mediaPlaying ? '▶️' : '⏸️'}
-                  <div className="video-title">Video Player</div>
-                </div>
-              </div>
-              <div className="video-controls">
-                <button className="video-btn">⏮️</button>
-                <button className="video-btn play">
-                  {state.mediaPlaying ? '⏸️' : '▶️'}
-                </button>
-                <button className="video-btn">⏭️</button>
-              </div>
-            </div>
-
-            <div className="entertainment-grid">
-              <div className="entertainment-card">
-                <div className="card-icon">🎵</div>
-                <div className="card-title">Music</div>
-                <div className="card-subtitle">Listen to your favorites</div>
-              </div>
-
-              <div className="entertainment-card">
-                <div className="card-icon">🎮</div>
-                <div className="card-title">Games</div>
-                <div className="card-subtitle">Play casual games</div>
-              </div>
-
-              <div className="entertainment-card">
-                <div className="card-icon">📺</div>
-                <div className="card-title">Streaming</div>
-                <div className="card-subtitle">Watch shows & movies</div>
-              </div>
-
-              <div className="entertainment-card">
-                <div className="card-icon">📻</div>
-                <div className="card-title">Radio</div>
-                <div className="card-subtitle">Listen to live radio</div>
-              </div>
-            </div>
-
-            <div className="now-playing-info">
-              <div className="np-label">Now Playing</div>
-              <div className="np-track">{state.currentTrack}</div>
-              <div className="np-volume">Volume: {state.volume}%</div>
-            </div>
-          </div>
-        )}
-
-        {activeSection === 'comfort' && (
-          <div className="comfort-section">
-            <div className="comfort-card large">
-              <div className="comfort-header">
-                <div className="comfort-icon">🌡️</div>
-                <div className="comfort-title">Climate Control - Dual Zone</div>
-              </div>
-              <div className="comfort-content">
-                <div className="climate-zones">
-                  <div className="climate-zone">
-                    <div className="climate-value">{state.driverTemp}°F</div>
-                    <div className="climate-label">Driver</div>
-                  </div>
-                  <div className="climate-zone">
-                    <div className="climate-value">{state.passengerTemp}°F</div>
-                    <div className="climate-label">Passenger</div>
-                  </div>
-                </div>
-                <div className="climate-info">
-                  <div className="info-row">
-                    <span>Fan Speed:</span>
-                    <span className="info-value">{state.fanSpeed}</span>
-                  </div>
-                  <div className="info-row">
-                    <span>Mode:</span>
-                    <span className="info-value">{state.acMode.toUpperCase()}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="comfort-grid">
-              <div className="comfort-card">
-                <div className="comfort-icon">💺</div>
-                <div className="comfort-title">Seat Heating</div>
-                <div className="comfort-actions">
-                  <button className="comfort-btn">Off</button>
-                  <button className="comfort-btn active">Low</button>
-                  <button className="comfort-btn">High</button>
-                </div>
-              </div>
-
-              <div className="comfort-card">
-                <div className="comfort-icon">💨</div>
-                <div className="comfort-title">Ventilation</div>
-                <div className="comfort-actions">
-                  <button className="comfort-btn active">Off</button>
-                  <button className="comfort-btn">On</button>
-                </div>
-              </div>
-
-              <div className="comfort-card">
-                <div className="comfort-icon">🌙</div>
-                <div className="comfort-title">Ambient Light</div>
-                <div className="color-options">
-                  <div className="color-dot" style={{ background: '#FF6B6B' }}></div>
-                  <div className="color-dot active" style={{ background: '#4ECDC4' }}></div>
-                  <div className="color-dot" style={{ background: '#FFE66D' }}></div>
-                  <div className="color-dot" style={{ background: '#A8E6CF' }}></div>
-                </div>
-              </div>
-
-              <div className="comfort-card">
-                <div className="comfort-icon">🪟</div>
-                <div className="comfort-title">Window Shade</div>
-                <div className="comfort-actions">
-                  <button className="comfort-btn">Open</button>
-                  <button className="comfort-btn active">Close</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeSection === 'info' && (
-          <div className="info-section">
-            <div className="info-grid">
-              <div className="info-card">
-                <div className="info-card-header">
-                  <div className="info-icon">🚗</div>
-                  <div className="info-title">Vehicle Status</div>
-                </div>
-                <div className="info-details">
-                  <div className="detail-row">
-                    <span>Speed:</span>
-                    <span className="detail-value">{state.currentSpeed} km/h</span>
-                  </div>
-                  <div className="detail-row">
-                    <span>Fuel:</span>
-                    <span className="detail-value">{state.fuelLevel}%</span>
-                  </div>
-                  <div className="detail-row">
-                    <span>Range:</span>
-                    <span className="detail-value">{state.range} km</span>
-                  </div>
-                  <div className="detail-row">
-                    <span>Trip:</span>
-                    <span className="detail-value">{state.tripDistance.toFixed(1)} km</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="info-card">
-                <div className="info-card-header">
-                  <div className="info-icon">📍</div>
-                  <div className="info-title">Navigation</div>
-                </div>
-                <div className="info-details">
-                  <div className="destination-info">
-                    {state.destination ? (
-                      <>
-                        <div className="destination">{state.destination}</div>
-                        <div className="eta">ETA: {state.eta}</div>
-                      </>
-                    ) : (
-                      <div className="no-destination">No destination set</div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="info-card">
-                <div className="info-card-header">
-                  <div className="info-icon">⚙️</div>
-                  <div className="info-title">System Info</div>
-                </div>
-                <div className="info-details">
-                  <div className="detail-row">
-                    <span>Connection:</span>
-                    <span className={`detail-value ${connected ? 'status-ok' : 'status-error'}`}>
-                      {connected ? 'Connected' : 'Disconnected'}
-                    </span>
-                  </div>
-                  <div className="detail-row">
-                    <span>Brightness:</span>
-                    <span className="detail-value">{state.brightness}%</span>
-                  </div>
-                  <div className="detail-row">
-                    <span>Theme:</span>
-                    <span className="detail-value">{state.theme}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="info-card">
-                <div className="info-card-header">
-                  <div className="info-icon">🎵</div>
-                  <div className="info-title">Media Info</div>
-                </div>
-                <div className="info-details">
-                  <div className="detail-row">
-                    <span>Status:</span>
-                    <span className="detail-value">
-                      {state.mediaPlaying ? 'Playing' : 'Paused'}
-                    </span>
-                  </div>
-                  <div className="detail-row">
-                    <span>Volume:</span>
-                    <span className="detail-value">{state.volume}%</span>
-                  </div>
-                  <div className="track-info-display">{state.currentTrack}</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="sync-status">
-              <div className="sync-header">🔄 Multi-Display Sync Active</div>
-              <div className="sync-description">
-                All changes made on any display are synchronized across all connected displays in real-time
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeSection === 'settings' && (
-          <div className="settings-section">
-            <SettingsApp />
-          </div>
-        )}
+      {/* Theater App Card Panel */}
+      <div className="passenger-app-panel">
+        <TheaterApp />
       </div>
     </div>
   );
 }
 
 export default PassengerDisplay;
-

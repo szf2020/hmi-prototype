@@ -12,7 +12,7 @@ import './IconButton.css';
  * @param {boolean} props.active - Whether button is in active state
  * @param {Function} props.onClick - Click handler
  * @param {string} props.label - Accessible label for screen readers
- * @param {'small' | 'large'} props.size - Button size (small = 64px, large = 96px)
+ * @param {'regular' | 'large'} props.size - Button size (regular = 64px, large = 96px)
  * @param {string} props.className - Additional CSS classes
  * @param {boolean} props.disabled - Whether button is disabled
  */
@@ -21,7 +21,7 @@ const IconButton = ({
   active = false,
   onClick,
   label,
-  size = 'small',
+  size = 'regular',
   className,
   disabled = false,
   ...rest

@@ -26,7 +26,7 @@
 }
 
 /* Sizes */
-.ds-button--small {
+.ds-button--regular {
   padding: var(--spacing-16, 16px) var(--spacing-24, 24px);
   font-size: var(--fontSize-20, 20px);
   line-height: var(--lineHeight-28, 28px);
@@ -179,7 +179,7 @@
   justify-content: center;
 }
 
-.ds-button--icon-only.ds-button--small {
+.ds-button--icon-only.ds-button--regular {
   width: 64px;
   height: 64px;
 }

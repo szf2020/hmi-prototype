@@ -214,7 +214,7 @@ const DesignSystemShowcase = () => {
                 Sizes
               </Typography>
               <div className="ds-showcase__button-grid">
-                <Button size="small">Regular (64px)</Button>
+                <Button size="regular">Regular (64px)</Button>
                 <Button size="large">Large (96px)</Button>
               </div>
             </Card>
@@ -260,7 +260,7 @@ const DesignSystemShowcase = () => {
             </Typography>
             <div className="ds-showcase__icon-button-grid">
               <div>
-                <IconButton icon={<HomeIcon />} size="small" label="Regular" />
+                <IconButton icon={<HomeIcon />} size="regular" label="Regular" />
                 <Typography variant="body-tiny">Regular (64px)</Typography>
               </div>
               <div>

@@ -1280,7 +1280,7 @@ function NavigationApp({ initialDestination, onDestinationHandled }) {
       <div className={`map-controls-container ${overlayPanelSide === 'left' ? 'right' : 'left'}`}>
         <Button
           variant="secondary"
-          size="small"
+          size="regular"
           onClick={goToCurrentLocation}
           aria-label="Go to current location"
           icon={
@@ -1297,7 +1297,7 @@ function NavigationApp({ initialDestination, onDestinationHandled }) {
         <div className="map-controls-divider" />
         <Button
           variant="secondary"
-          size="small"
+          size="regular"
           onClick={zoomIn}
           aria-label="Zoom in"
           icon={
@@ -1309,7 +1309,7 @@ function NavigationApp({ initialDestination, onDestinationHandled }) {
         />
         <Button
           variant="secondary"
-          size="small"
+          size="regular"
           onClick={zoomOut}
           aria-label="Zoom out"
           icon={

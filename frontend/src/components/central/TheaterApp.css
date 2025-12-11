@@ -1,0 +1,311 @@
+.theater-app {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+  overflow: hidden;
+}
+
+/* Featured Banner */
+.theater-banner {
+  position: relative;
+  width: 100%;
+  height: 55%;
+  min-height: 300px;
+  overflow: hidden;
+  margin-bottom: var(--spacing-40, 40px);
+}
+
+.theater-banner-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 100%);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 100%);
+}
+
+.theater-banner-content {
+  position: absolute;
+  bottom: var(--spacing-24, 24px);
+  left: var(--spacing-40, 40px);
+  max-width: 420px;
+  z-index: 2;
+}
+
+.theater-banner-provider {
+  margin-bottom: var(--spacing-8, 8px);
+  opacity: 0.9;
+}
+
+.theater-banner-provider svg {
+  height: 64px;
+  width: auto;
+}
+
+.theater-banner-title-image {
+  max-width: 100%;
+  height: 64px;
+  margin: 0 0 var(--spacing-12, 12px) 0;
+  object-fit: contain;
+  object-position: left;
+}
+
+.theater-banner-description {
+  /* body-tiny typography */
+  font-family: var(--fontFamily-hmi, 'TT Commons Pro', -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: var(--fontSize-16, 16px);
+  font-weight: var(--fontWeight-semibold, 600);
+  line-height: var(--lineHeight-24, 24px);
+  letter-spacing: var(--letterSpacing-tight, -0.5px);
+  color: var(--onSurface-inactive, rgba(255, 255, 255, 0.6));
+  margin: 0 0 var(--spacing-20, 20px) 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.theater-banner-play {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-8, 8px);
+  padding: var(--spacing-12, 12px) var(--spacing-24, 24px);
+  background: var(--surface-secondary-enabled, rgba(255, 255, 255, 0.1));
+  border: none;
+  border-radius: var(--borderRadius-8, 8px);
+  font-family: var(--fontFamily-hmi, 'TT Commons Pro', -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: var(--fontSize-16, 16px);
+  font-weight: var(--fontWeight-semibold, 600);
+  color: var(--onSurface-enabled, rgba(255, 255, 255, 0.9));
+  cursor: pointer;
+  transition: background-color 150ms var(--motion-easing-smooth, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+.theater-banner-play:hover {
+  background: var(--surface-secondary-pressed, rgba(255, 255, 255, 0.15));
+}
+
+.theater-banner-play:active {
+  background: var(--surface-secondary-selected, rgba(255, 255, 255, 0.2));
+}
+
+.theater-banner-play svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Search Button */
+.theater-search-btn {
+  position: absolute;
+  top: var(--spacing-16, 16px);
+  right: var(--spacing-24, 24px);
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--onSurface-enabled, rgba(255, 255, 255, 0.9));
+  cursor: pointer;
+  border-radius: var(--borderRadius-8, 8px);
+  transition: background-color 150ms var(--motion-easing-smooth, cubic-bezier(0.4, 0, 0.2, 1));
+  z-index: 3;
+}
+
+.theater-search-btn:hover {
+  background: var(--surface-secondary-enabled, rgba(255, 255, 255, 0.1));
+}
+
+/* Banner Indicators */
+.theater-banner-indicators {
+  position: absolute;
+  bottom: var(--spacing-24, 24px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: var(--spacing-8, 8px);
+  z-index: 3;
+}
+
+.theater-banner-indicators .indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--surface-secondary-enabled, rgba(255, 255, 255, 0.2));
+  transition: all 150ms var(--motion-easing-smooth, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+.theater-banner-indicators .indicator.active {
+  background: var(--onSurface-enabled, rgba(255, 255, 255, 0.9));
+  width: 24px;
+  border-radius: 4px;
+}
+
+/* Navigation Tabs */
+.theater-tabs {
+  display: flex;
+  gap: var(--spacing-4, 4px);
+  padding: var(--spacing-8, 8px);
+  background: var(--surface-secondary-enabled, rgba(255, 255, 255, 0.1));
+  border-radius: var(--borderRadius-16, 16px);
+  margin: 0 var(--spacing-40, 40px);
+  width: fit-content;
+}
+
+/* Override Button component sizing for tab context */
+.theater-tabs .theater-tab.ds-button {
+  height: 48px;
+  padding: var(--spacing-12, 12px) var(--spacing-24, 24px);
+  border-radius: var(--borderRadius-12, 12px);
+  /* Font styles inherited from Button component (.ds-button and .ds-button--regular) */
+}
+
+/* Tertiary (inactive) tabs need slightly muted text */
+.theater-tabs .theater-tab.ds-button--tertiary {
+  color: var(--onSurface-inactive, rgba(255, 255, 255, 0.6));
+}
+
+.theater-tabs .theater-tab.ds-button--tertiary:hover:not(:disabled) {
+  color: var(--onSurface-enabled, rgba(255, 255, 255, 0.9));
+}
+
+/* Streaming Services Section */
+.theater-services {
+  flex: 1;
+  padding: var(--spacing-40, 40px);
+}
+
+.theater-services-title {
+  /* headline-medium typography */
+  font-family: var(--fontFamily-hmi, 'TT Commons Pro', -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: var(--fontSize-32, 32px);
+  font-weight: var(--fontWeight-semibold, 600);
+  line-height: var(--lineHeight-36, 36px);
+  letter-spacing: var(--letterSpacing-tight, -0.5px);
+  color: var(--onSurface-enabled, rgba(255, 255, 255, 0.9));
+  margin: 0 0 var(--spacing-16, 16px) 0;
+}
+
+.theater-services-grid {
+  display: flex;
+  gap: var(--spacing-16, 16px);
+  overflow-x: visible;
+  padding-bottom: var(--spacing-8, 8px);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.theater-services-grid::-webkit-scrollbar {
+  display: none;
+}
+
+.theater-service-card {
+  flex-shrink: 0;
+  width: var(--spacing-160, 160px);
+  height: var(--spacing-160, 160px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--borderRadius-16, 16px);
+  cursor: pointer;
+  transition: all 150ms var(--motion-easing-smooth, cubic-bezier(0.4, 0, 0.2, 1));
+  overflow: hidden;
+  padding: 0;
+}
+
+.theater-service-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.theater-service-card:active {
+  transform: scale(0.98);
+}
+
+.theater-service-card.selected {
+  outline: 3px solid var(--surface-primary-enabled, #335fff);
+  outline-offset: 2px;
+}
+
+.theater-service-card.placeholder {
+  background: var(--surface-secondary-enabled, rgba(255, 255, 255, 0.1)) !important;
+  border: 2px dashed var(--elements-divider, rgba(255, 255, 255, 0.1));
+}
+
+.theater-service-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--borderRadius-16, 16px);
+}
+
+.theater-service-icon {
+  width: 80%;
+  height: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theater-service-icon svg {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.theater-service-placeholder-text {
+  font-family: var(--fontFamily-hmi, 'TT Commons Pro', -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: var(--fontSize-12, 12px);
+  font-weight: var(--fontWeight-medium, 500);
+  color: var(--onSurface-inactive, rgba(255, 255, 255, 0.6));
+  margin-top: var(--spacing-4, 4px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .theater-banner {
+    height: 50%;
+  }
+  
+  .theater-banner-title {
+    font-size: var(--fontSize-36, 36px);
+  }
+  
+  .theater-banner-content {
+    max-width: 320px;
+    left: var(--spacing-24, 24px);
+  }
+  
+  .theater-tabs {
+    margin: 0 var(--spacing-16, 16px);
+  }
+  
+  .theater-tabs .theater-tab.ds-button {
+    height: 44px;
+    padding: var(--spacing-10, 10px) var(--spacing-20, 20px);
+  }
+}
+
+@media (max-width: 768px) {
+  .theater-banner {
+    height: 45%;
+    min-height: 250px;
+  }
+  
+  .theater-banner-title {
+    font-size: var(--fontSize-28, 28px);
+  }
+  
+  .theater-banner-description {
+    -webkit-line-clamp: 3;
+  }
+  
+  .theater-service-card {
+    width: var(--spacing-128, 128px);
+    height: var(--spacing-128, 128px);
+  }
+}

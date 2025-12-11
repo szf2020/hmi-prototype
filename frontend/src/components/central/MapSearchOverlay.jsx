@@ -529,14 +529,14 @@ function MapSearchOverlay({
       <div className="navigation-buttons">
         <Button 
           variant="primary" 
-          size="small" 
+          size="regular" 
           className="start-route-button"
         >
           Start
         </Button>
         <Button 
           variant="secondary" 
-          size="small" 
+          size="regular" 
           onClick={onClearRoute}
           className="end-route-button"
         >
@@ -556,7 +556,7 @@ function MapSearchOverlay({
         <div className="results-header">
           <Button 
             variant="secondary" 
-            size="small" 
+            size="regular" 
             onClick={handleBackToSearch}
             aria-label="Go back"
             icon={

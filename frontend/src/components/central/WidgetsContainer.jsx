@@ -540,7 +540,7 @@ const WidgetsContainer = ({ setActiveView, setPendingDestination }) => {
                     </div>
                     <Button 
                       variant="primary"
-                      size="small"
+                      size="regular"
                       className="navigation-eta-button"
                       onClick={() => {
                         // Set the destination before navigating
@@ -576,7 +576,7 @@ const WidgetsContainer = ({ setActiveView, setPendingDestination }) => {
                     </Typography>
                     <Button 
                       variant="primary"
-                      size="small"
+                      size="regular"
                       className="navigation-eta-button"
                       onClick={() => setActiveView('navigation')}
                       icon={

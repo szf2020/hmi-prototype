@@ -9,7 +9,7 @@ import './Button.css';
  * 
  * @param {Object} props
  * @param {'primary' | 'secondary' | 'tertiary' | 'danger'} props.variant - Button visual variant
- * @param {'small' | 'large'} props.size - Button size (small = 64px height, large = 96px height)
+ * @param {'regular' | 'large'} props.size - Button size (regular = 64px height, large = 96px height)
  * @param {boolean} props.disabled - Whether button is disabled
  * @param {boolean} props.loading - Whether button is in loading state
  * @param {ReactNode} props.children - Button content
@@ -21,7 +21,7 @@ import './Button.css';
  */
 const Button = ({
   variant = 'primary',
-  size = 'small',
+  size = 'regular',
   disabled = false,
   loading = false,
   children,

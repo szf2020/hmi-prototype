@@ -31,13 +31,13 @@
 }
 
 /* Sizes */
-.ds-icon-button--small {
+.ds-icon-button--regular {
   width: 64px;
   height: 64px;
   padding: var(--spacing-12, 12px);
 }
 
-.ds-icon-button--small .ds-icon-button__icon {
+.ds-icon-button--regular .ds-icon-button__icon {
   width: var(--spacing-32, 32px);
   height: var(--spacing-32, 32px);
 }
