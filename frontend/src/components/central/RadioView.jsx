@@ -81,6 +81,8 @@ const FALLBACK_LOGO = 'data:image/svg+xml,' + encodeURIComponent(`
 const RadioView = () => {
   const [isSourceDropdownOpen, setIsSourceDropdownOpen] = useState(false);
   const [selectedSource, setSelectedSource] = useState('radio');
+  const [nowPlaying, setNowPlaying] = useState({ artist: null, title: null });
+  const [shouldAnimateNowPlaying, setShouldAnimateNowPlaying] = useState(false);
   
   const {
     currentStation,
@@ -108,6 +110,52 @@ const RadioView = () => {
       fetchStations(category);
     }
   }, []);
+
+  // Fetch now-playing info every 30 seconds
+  useEffect(() => {
+    // Reset animation state when station changes
+    setShouldAnimateNowPlaying(false);
+    
+    // Enable animation after 500ms delay
+    const animationTimer = setTimeout(() => {
+      setShouldAnimateNowPlaying(true);
+    }, 500);
+
+    const fetchNowPlaying = async () => {
+      if (!currentStation?.url_resolved && !currentStation?.url) {
+        setNowPlaying({ artist: null, title: null });
+        return;
+      }
+
+      const streamUrl = currentStation.url_resolved || currentStation.url;
+      
+      try {
+        const response = await fetch(
+          `http://localhost:3001/api/now-playing?url=${encodeURIComponent(streamUrl)}`
+        );
+        const data = await response.json();
+        
+        if (data.success && (data.artist || data.title)) {
+          setNowPlaying({
+            artist: data.artist,
+            title: data.title
+          });
+        } else {
+          setNowPlaying({ artist: null, title: null });
+        }
+      } catch (error) {
+        console.error('Error fetching now-playing info:', error);
+        setNowPlaying({ artist: null, title: null });
+      }
+    };
+
+    fetchNowPlaying();
+    const interval = setInterval(fetchNowPlaying, 30000);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(animationTimer);
+    };
+  }, [currentStation]);
 
   const handleSourceSelect = (sourceId) => {
     const source = MEDIA_SOURCES.find(s => s.id === sourceId);
@@ -219,8 +267,15 @@ const RadioView = () => {
               <Typography variant="headline-medium" className="radio-station-name">
                 {currentStation?.name || 'Select a Station'}
               </Typography>
-              <Typography variant="body-medium" className="radio-station-meta">
-                {currentStation ? getStationTags(currentStation) : 'Browse stations to the right'}
+              <Typography 
+                variant="body-medium" 
+                className={`radio-station-meta ${shouldAnimateNowPlaying && nowPlaying.artist && nowPlaying.title ? 'radio-station-meta--animate' : ''}`}
+                truncate
+                key={nowPlaying.artist && nowPlaying.title ? `${nowPlaying.artist}-${nowPlaying.title}` : 'default'}
+              >
+                {nowPlaying.artist && nowPlaying.title 
+                  ? `${nowPlaying.artist} - ${nowPlaying.title}`
+                  : (currentStation ? getStationTags(currentStation) : 'Browse stations to the right')}
               </Typography>
               <div className="radio-status">
                 {isLoading ? (

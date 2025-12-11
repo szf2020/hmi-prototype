@@ -103,15 +103,20 @@ const getManeuverIcon = (type, modifier) => {
   return iconMap['default'];
 };
 
-// Helper function to format distance
+// Helper function to format distance (imperial units)
 const formatDistance = (meters) => {
-  if (meters < 1000) {
-    return `${Math.round(meters)} m`;
-  }
+  const feet = meters * 3.28084;
   const miles = meters / 1609.34;
+  
+  // Use feet for distances under 0.1 miles (528 ft)
+  if (miles < 0.1) {
+    return `${Math.round(feet)} ft`;
+  }
+  // Use miles with one decimal for distances under 10 miles
   if (miles < 10) {
     return `${miles.toFixed(1)} mi`;
   }
+  // Round miles for larger distances
   return `${Math.round(miles)} mi`;
 };
 
@@ -326,9 +331,11 @@ function MapSearchOverlay({
     }
   };
 
-  // Handle back button to clear results and return to search view
+  // Handle back button to clear results and return to default navigation view
   const handleBackToSearch = () => {
-    onSearch('', false); // This will clear results
+    if (onClearRoute) {
+      onClearRoute(); // Clears search results, POI markers, and returns to default view
+    }
   };
 
   // Drag handlers
@@ -491,16 +498,11 @@ function MapSearchOverlay({
             </Card>
           ) : navigationInstructions && navigationInstructions.length > 0 ? (
             navigationInstructions.map((instruction, index) => (
-              <Card 
+              <div 
                 key={instruction.id} 
-                variant={index === 0 ? 'elevated' : 'default'} 
-                compact
-                className={`direction-card ${index === 0 ? 'direction-card--active' : ''}`}
+                className={`direction-item ${index === 0 ? 'direction-item--active' : ''}`}
               >
                 <div className="direction-item-content">
-                  <div className="direction-number">
-                    <Typography variant="label-small" as="span">{index + 1}</Typography>
-                  </div>
                   <div className="direction-icon">
                     {getManeuverIcon(instruction.type, instruction.modifier)}
                   </div>
@@ -513,7 +515,7 @@ function MapSearchOverlay({
                     </Typography>
                   </div>
                 </div>
-              </Card>
+              </div>
             ))
           ) : (
             <Card variant="default" className="no-directions-card">
@@ -550,13 +552,19 @@ function MapSearchOverlay({
     
     return (
       <div className="search-overlay-content">
-        {/* Header with back button */}
+        {/* Results Header */}
         <div className="results-header">
-          <button className="back-button" onClick={handleBackToSearch}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
+          <Button 
+            variant="secondary" 
+            size="small" 
+            onClick={handleBackToSearch}
+            aria-label="Go back"
+            icon={
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            }
+          />
           <Typography variant="headline-small" as="h2" className="results-title">
             {activeCategory || 'Search Results'}
           </Typography>

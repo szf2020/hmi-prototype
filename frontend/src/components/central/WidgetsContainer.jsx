@@ -16,6 +16,8 @@ const FALLBACK_LOGO = 'data:image/svg+xml,' + encodeURIComponent(`
 
 const WidgetsContainer = ({ setActiveView }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [nowPlaying, setNowPlaying] = useState({ artist: null, title: null });
+  const [shouldAnimateNowPlaying, setShouldAnimateNowPlaying] = useState(false);
   
   // Radio state and controls
   const {
@@ -45,6 +47,57 @@ const WidgetsContainer = ({ setActiveView }) => {
       fetchStations('popular');
     }
   }, [hasStations, fetchStations]);
+
+  // Fetch now-playing info every 30 seconds
+  useEffect(() => {
+    // Reset animation state when station changes
+    setShouldAnimateNowPlaying(false);
+    
+    // Enable animation after 500ms delay
+    const animationTimer = setTimeout(() => {
+      setShouldAnimateNowPlaying(true);
+    }, 500);
+
+    const fetchNowPlaying = async () => {
+      if (!currentStation?.url_resolved && !currentStation?.url) {
+        setNowPlaying({ artist: null, title: null });
+        return;
+      }
+
+      const streamUrl = currentStation.url_resolved || currentStation.url;
+      
+      try {
+        const response = await fetch(
+          `http://localhost:3001/api/now-playing?url=${encodeURIComponent(streamUrl)}`
+        );
+        const data = await response.json();
+        
+        if (data.success && (data.artist || data.title)) {
+          setNowPlaying({
+            artist: data.artist,
+            title: data.title
+          });
+        } else {
+          // Clear now playing if no data
+          setNowPlaying({ artist: null, title: null });
+        }
+      } catch (error) {
+        console.error('Error fetching now-playing info:', error);
+        setNowPlaying({ artist: null, title: null });
+      }
+    };
+
+    // Fetch immediately when station changes
+    fetchNowPlaying();
+
+    // Then fetch every 30 seconds
+    const interval = setInterval(fetchNowPlaying, 30000);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(animationTimer);
+    };
+  }, [currentStation]);
 
   // Generate calendar days for the current month
   const getCalendarDays = (date) => {
@@ -149,8 +202,15 @@ const WidgetsContainer = ({ setActiveView }) => {
                   <Typography variant="body-medium" className="music-title" truncate>
                     {currentStation?.name || 'No Station Selected'}
                   </Typography>
-                  <Typography variant="body-medium" className="music-artist">
-                    {currentStation ? getStationTags(currentStation) : 'Open Media to browse'}
+                  <Typography 
+                    variant="body-medium" 
+                    className={`music-artist ${shouldAnimateNowPlaying && nowPlaying.artist && nowPlaying.title ? 'music-artist--animate' : ''}`}
+                    truncate
+                    key={nowPlaying.artist && nowPlaying.title ? `${nowPlaying.artist}-${nowPlaying.title}` : 'default'}
+                  >
+                    {nowPlaying.artist && nowPlaying.title 
+                      ? `${nowPlaying.artist} - ${nowPlaying.title}`
+                      : (currentStation ? getStationTags(currentStation) : 'Open Media to browse')}
                   </Typography>
                 </div>
               </div>

@@ -51,12 +51,29 @@ const formatPhotonAddress = (props) => {
   return parts.join(', ') || props.name || 'Address unavailable';
 };
 
+// Maximum search radius in miles
+const MAX_SEARCH_RADIUS_MILES = 20;
+
+// Calculate distance between two coordinates using Haversine formula (returns miles)
+const calculateDistanceMiles = (lat1, lon1, lat2, lon2) => {
+  const R = 3958.8; // Earth's radius in miles
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
 // Search for places using Photon API
 const searchPhoton = async (query, isCategory = false) => {
   try {
+    // Request more results to filter by distance, then take top 10 within range
     const params = new URLSearchParams({
       q: isCategory ? query : query,
-      limit: 10,
+      limit: 50,
       lat: FAKE_CURRENT_LOCATION.latitude,
       lon: FAKE_CURRENT_LOCATION.longitude,
       lang: 'en'
@@ -79,15 +96,38 @@ const searchPhoton = async (query, isCategory = false) => {
     const data = await response.json();
     
     // Photon returns GeoJSON FeatureCollection
-    return data.features.map((feature, index) => ({
-      id: feature.properties.osm_id || `result-${index}`,
-      name: feature.properties.name || feature.properties.street || 'Unknown',
-      address: formatPhotonAddress(feature.properties),
-      latitude: feature.geometry.coordinates[1],  // GeoJSON is [lon, lat]
-      longitude: feature.geometry.coordinates[0],
-      type: feature.properties.osm_value || feature.properties.osm_key,
-      category: feature.properties.osm_key
-    }));
+    // Map results and calculate distance from current location
+    const resultsWithDistance = data.features.map((feature, index) => {
+      const lat = feature.geometry.coordinates[1];
+      const lon = feature.geometry.coordinates[0];
+      const distance = calculateDistanceMiles(
+        FAKE_CURRENT_LOCATION.latitude,
+        FAKE_CURRENT_LOCATION.longitude,
+        lat,
+        lon
+      );
+      
+      return {
+        id: `${feature.properties.osm_id || 'result'}-${index}`,
+        name: feature.properties.name || feature.properties.street || 'Unknown',
+        address: formatPhotonAddress(feature.properties),
+        latitude: lat,
+        longitude: lon,
+        type: feature.properties.osm_value || feature.properties.osm_key,
+        category: feature.properties.osm_key,
+        distance: distance
+      };
+    });
+
+    // Filter results within 20 miles, sort by distance, and take top 10
+    const filteredResults = resultsWithDistance
+      .filter(result => result.distance <= MAX_SEARCH_RADIUS_MILES)
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, 10);
+
+    console.log(`Found ${data.features.length} total results, ${filteredResults.length} within ${MAX_SEARCH_RADIUS_MILES} miles`);
+    
+    return filteredResults;
 
   } catch (error) {
     console.error('Photon search failed:', error);
@@ -943,8 +983,15 @@ function NavigationApp() {
     console.log('Overlay panel moved to:', newSide);
     setOverlayPanelSide(newSide);
     
+    if (!map.current || !mapLoaded) return;
+    
+    const overlayPadding = 550;
+    const padding = newSide === 'left' 
+      ? { top: 100, bottom: 100, left: overlayPadding, right: 100 }
+      : { top: 100, bottom: 100, left: 100, right: overlayPadding };
+    
     // Re-center the map if there's an active route
-    if (activeRoute && map.current && mapLoaded) {
+    if (activeRoute) {
       const destination = DESTINATIONS[activeRoute];
       if (destination) {
         const currentLocation = FAKE_CURRENT_LOCATION;
@@ -952,17 +999,39 @@ function NavigationApp() {
         bounds.extend([currentLocation.longitude, currentLocation.latitude]);
         bounds.extend([destination.longitude, destination.latitude]);
         
-        // Apply padding based on new panel side
-        const overlayPadding = 550;
-        const padding = newSide === 'left' 
-          ? { top: 100, bottom: 100, left: overlayPadding, right: 100 }
-          : { top: 100, bottom: 100, left: 100, right: overlayPadding };
-        
         map.current.fitBounds(bounds, {
           padding,
           duration: 800
         });
       }
+    }
+    // Re-center the map if there are search results displayed
+    else if (searchResults.length > 0) {
+      const bounds = new maplibregl.LngLatBounds();
+      bounds.extend([FAKE_CURRENT_LOCATION.longitude, FAKE_CURRENT_LOCATION.latitude]);
+      searchResults.forEach(result => {
+        bounds.extend([result.longitude, result.latitude]);
+      });
+      
+      map.current.fitBounds(bounds, {
+        padding,
+        duration: 800,
+        maxZoom: 14
+      });
+    }
+    // No route or results, just shift the current view
+    else {
+      const currentCenter = map.current.getCenter();
+      const currentZoom = map.current.getZoom();
+      
+      // Calculate offset based on panel side (shift map center away from panel)
+      const offsetLng = newSide === 'left' ? 0.01 : -0.01;
+      
+      map.current.easeTo({
+        center: [currentCenter.lng + offsetLng, currentCenter.lat],
+        zoom: currentZoom,
+        duration: 800
+      });
     }
   };
 

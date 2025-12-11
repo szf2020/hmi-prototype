@@ -418,49 +418,25 @@
   display: none; /* Chrome, Safari, Opera */
 }
 
-/* Direction Card - Override DS Card styles */
-.direction-card.ds-card {
-  border: 1px solid var(--elements-divider);
-  background-color: var(--surface-tertiary-enabled);
-  transition: all var(--motion-duration-fast, 150ms) var(--motion-easing-standard);
-  padding: 0;
+/* Direction Item - Simple div styling */
+.direction-item {
+  padding: var(--spacing-12) 0;
+  border-bottom: 1px solid var(--elements-divider);
 }
 
-.direction-card.ds-card .ds-card__body {
-  padding: var(--spacing-16);
+.direction-item:last-child {
+  border-bottom: none;
 }
 
-/* Active direction card (first item) */
-.direction-card--active.ds-card {
-  background-color: var(--surface-secondary-enabled);
-  border: 2px solid var(--surface-primary-enabled);
-}
-
-.direction-card--active.ds-card .ds-card__body {
-  padding: calc(var(--spacing-16) - 1px); /* Account for thicker border */
+/* Active direction item (first item) */
+.direction-item--active {
+  padding: var(--spacing-16) 0;
 }
 
 .direction-item-content {
   display: flex;
   align-items: flex-start;
   gap: var(--spacing-12);
-}
-
-.direction-number {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--borderRadius-circle, 50%);
-  background-color: var(--surface-secondary-enabled);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  color: var(--onSurface-primary-inactive);
-}
-
-.direction-card--active .direction-number {
-  background-color: var(--surface-primary-enabled);
-  color: var(--onSurface-primary-enabled);
 }
 
 .direction-icon {
@@ -471,10 +447,6 @@
   justify-content: center;
   flex-shrink: 0;
   color: var(--onSurface-primary-enabled);
-}
-
-.direction-card--active .direction-icon {
-  color: var(--surface-primary-enabled);
 }
 
 .direction-content {
@@ -551,42 +523,32 @@
 /* Search Results View Styles       */
 /* ================================ */
 
-/* Results Header */
+/* Results Header - horizontal layout with back button, title, and count */
 .results-header {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: var(--spacing-16);
   margin-bottom: var(--spacing-24);
   flex-shrink: 0;
+  flex-wrap: nowrap;
 }
 
-.back-button {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--borderRadius-circle, 50%);
-  background-color: var(--surface-tertiary-enabled);
-  border: 1px solid var(--elements-divider);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--onSurface-primary-enabled);
-  flex-shrink: 0;
-  transition: background-color 0.2s ease;
-}
-
-.back-button:active {
-  background-color: var(--surface-secondary-pressed);
-}
 
 .results-title {
   flex: 1;
   color: var(--onSurface-primary-enabled);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  margin: 0;
 }
 
 .results-count {
   color: var(--onSurface-primary-inactive);
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 /* Search Loading */
@@ -684,9 +646,26 @@
   margin-bottom: var(--spacing-4);
 }
 
+.result-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-8);
+}
+
+.result-distance {
+  color: var(--onSurface-primary-enabled);
+  font-weight: var(--fontWeight-semibold);
+}
+
 .result-type {
-  color: var(--surface-primary-enabled);
+  color: var(--onSurface-primary-inactive);
   text-transform: capitalize;
+}
+
+.result-meta .result-type::before {
+  content: '•';
+  margin-right: var(--spacing-8);
+  color: var(--onSurface-primary-inactive);
 }
 
 /* Result Arrow */

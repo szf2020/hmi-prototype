@@ -223,6 +223,21 @@
   margin: 0;
 }
 
+.radio-station-meta--animate {
+  animation: fadeInNowPlaying calc(var(--motion-duration-standard) * 1ms) var(--motion-easing-entrance);
+}
+
+@keyframes fadeInNowPlaying {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .radio-status {
   display: none;
 }

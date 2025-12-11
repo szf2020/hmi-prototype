@@ -121,14 +121,6 @@ function SettingsApp() {
       preview: '/models/tpz-fuchs.glb'
     },
     {
-      id: 'macan',
-      path: '/models/macan.glb',
-      label: 'Porsche Macan',
-      description: 'Compact luxury SUV',
-      icon: '🚙',
-      preview: '/models/macan.glb'
-    },
-    {
       id: 'sports',
       path: '/models/sports-car.glb',
       label: 'Sports Car',

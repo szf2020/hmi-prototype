@@ -244,6 +244,114 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Now playing metadata endpoint - fetches ICY metadata from radio streams
+app.get('/api/now-playing', async (req, res) => {
+  const streamUrl = req.query.url;
+  
+  if (!streamUrl) {
+    return res.status(400).json({ error: 'Stream URL is required' });
+  }
+
+  try {
+    // Create an AbortController to timeout the request
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+
+    const response = await fetch(streamUrl, {
+      method: 'GET',
+      headers: {
+        'Icy-MetaData': '1',
+        'User-Agent': 'HMI-Prototype/1.0'
+      },
+      signal: controller.signal
+    });
+
+    clearTimeout(timeout);
+
+    // Get ICY metadata interval from headers
+    const icyMetaInt = parseInt(response.headers.get('icy-metaint') || '0', 10);
+    const icyName = response.headers.get('icy-name') || '';
+    const icyDescription = response.headers.get('icy-description') || '';
+    const icyGenre = response.headers.get('icy-genre') || '';
+
+    if (icyMetaInt > 0) {
+      // Read stream data up to the metadata
+      const reader = response.body.getReader();
+      let bytesRead = 0;
+      let metadata = '';
+      
+      try {
+        while (bytesRead < icyMetaInt + 4081) { // Read a bit past the metadata position
+          const { value, done } = await reader.read();
+          if (done) break;
+          
+          bytesRead += value.length;
+          
+          // Check if we've passed the metadata position
+          if (bytesRead >= icyMetaInt) {
+            // Try to find and extract the StreamTitle
+            const chunk = new TextDecoder('utf-8', { fatal: false }).decode(value);
+            const streamTitleMatch = chunk.match(/StreamTitle='([^']*?)'/);
+            if (streamTitleMatch) {
+              metadata = streamTitleMatch[1];
+              break;
+            }
+          }
+        }
+      } catch (readError) {
+        console.log('Stream read error (expected):', readError.message);
+      } finally {
+        reader.cancel();
+      }
+
+      // Parse artist and title from metadata (usually "Artist - Title" format)
+      let artist = '';
+      let title = '';
+      
+      if (metadata) {
+        const parts = metadata.split(' - ');
+        if (parts.length >= 2) {
+          artist = parts[0].trim();
+          title = parts.slice(1).join(' - ').trim();
+        } else {
+          title = metadata.trim();
+        }
+      }
+
+      res.json({
+        success: true,
+        nowPlaying: metadata || null,
+        artist: artist || null,
+        title: title || null,
+        stationName: icyName || null,
+        genre: icyGenre || null,
+        description: icyDescription || null
+      });
+    } else {
+      // No ICY metadata support
+      res.json({
+        success: true,
+        nowPlaying: null,
+        artist: null,
+        title: null,
+        stationName: icyName || null,
+        genre: icyGenre || null,
+        description: icyDescription || null,
+        message: 'Stream does not support ICY metadata'
+      });
+    }
+  } catch (error) {
+    console.error('Error fetching now-playing:', error.message);
+    res.json({
+      success: false,
+      nowPlaying: null,
+      artist: null,
+      title: null,
+      error: error.message
+    });
+  }
+});
+
 const PORT = process.env.PORT || 3001;
 const HOST = '0.0.0.0'; // Listen on all network interfaces
 

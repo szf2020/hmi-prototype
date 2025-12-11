@@ -201,11 +201,9 @@
   width: 36px;
   height: 36px;
   cursor: pointer;
-  transition: transform 0.2s ease;
 }
 
 .poi-marker:hover {
-  transform: scale(1.15);
   z-index: 10;
 }
 
