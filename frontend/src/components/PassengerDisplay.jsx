@@ -19,6 +19,7 @@ function PassengerDisplay() {
       
       {/* Passenger Login - positioned over status bar */}
       <button className="passenger-login">
+        <span className="passenger-login-text">Login</span>
         <svg width="32" height="32" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
           <g clipPath="url(#clip0_passenger_login)">
             <g clipPath="url(#clip1_passenger_login)">
@@ -34,7 +35,6 @@ function PassengerDisplay() {
             </clipPath>
           </defs>
         </svg>
-        <span className="passenger-login-text">Login</span>
       </button>
 
       {/* Theater App Card Panel */}
