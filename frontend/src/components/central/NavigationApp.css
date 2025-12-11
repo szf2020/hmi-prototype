@@ -181,6 +181,20 @@
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.7));
 }
 
+/* Pulsing animation for car marker while loading location */
+.car-marker.loading svg {
+  animation: car-marker-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes car-marker-pulse {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 /* Destination marker */
 .destination-marker {
   width: 48px;

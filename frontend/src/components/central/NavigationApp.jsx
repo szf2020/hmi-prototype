@@ -7,11 +7,51 @@ import MapSearchOverlay from './MapSearchOverlay';
 // Module-level variable to track initialization globally
 let globalMapInstance = null;
 
-// ===== PRESET FAKE LOCATION =====
-// San Mateo Downtown, CA coordinates
-const FAKE_CURRENT_LOCATION = {
+// ===== PRESET FALLBACK LOCATION =====
+// San Mateo Downtown, CA coordinates (used when no cached or real location available)
+const FALLBACK_LOCATION = {
   latitude: 37.5630,
   longitude: -122.3255
+};
+
+// ===== LOCATION CACHING =====
+const LOCATION_STORAGE_KEY = 'hmi_last_known_location';
+const MAX_CACHE_AGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+// Load cached location from localStorage
+const getCachedLocation = () => {
+  try {
+    const cached = localStorage.getItem(LOCATION_STORAGE_KEY);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      // Check if location exists and is not too old
+      if (parsed.latitude && parsed.longitude) {
+        if (parsed.timestamp && (Date.now() - parsed.timestamp > MAX_CACHE_AGE_MS)) {
+          console.log('Cached location expired, ignoring');
+          return null;
+        }
+        console.log('Using cached location:', parsed);
+        return { latitude: parsed.latitude, longitude: parsed.longitude };
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to load cached location:', e);
+  }
+  return null;
+};
+
+// Save location to localStorage
+const setCachedLocation = (location) => {
+  try {
+    localStorage.setItem(LOCATION_STORAGE_KEY, JSON.stringify({
+      latitude: location.latitude,
+      longitude: location.longitude,
+      timestamp: Date.now()
+    }));
+    console.log('Cached location saved:', location);
+  } catch (e) {
+    console.warn('Failed to cache location:', e);
+  }
 };
 
 // ===== CATEGORY TO OSM TAG MAPPING =====
@@ -68,7 +108,7 @@ const calculateDistanceMiles = (lat1, lon1, lat2, lon2) => {
 };
 
 // Search for places using Photon API
-const searchPhoton = async (query, isCategory = false, userLocation = FAKE_CURRENT_LOCATION) => {
+const searchPhoton = async (query, isCategory = false, userLocation = FALLBACK_LOCATION) => {
   try {
     // Request more results to filter by distance, then take top 10 within range
     const params = new URLSearchParams({
@@ -144,7 +184,8 @@ function NavigationApp({ initialDestination, onDestinationHandled }) {
   const isInitialized = useRef(false);
   const routeSvgRef = useRef(null);
   const poiMarkers = useRef([]); // Array to track POI markers for cleanup
-  const currentLocation = useRef(FAKE_CURRENT_LOCATION); // Stores current user location (real or fallback)
+  const currentLocation = useRef(FALLBACK_LOCATION); // Stores current user location (real or fallback)
+  const isLocationResolved = useRef(false); // Tracks if real location has been determined
   const [mapLoaded, setMapLoaded] = useState(false);
   const [locationStatus, setLocationStatus] = useState('requesting');
   const [isSearchOpen, setIsSearchOpen] = useState(true); // Show by default
@@ -401,8 +442,9 @@ function NavigationApp({ initialDestination, onDestinationHandled }) {
           // Add car marker if we have user location
           if (userLocation) {
             // Create HTML element with inline SVG for car marker
+            // Add 'loading' class for pulsing animation while fetching real location (if not already resolved)
             const carElement = document.createElement('div');
-            carElement.className = 'car-marker';
+            carElement.className = isLocationResolved.current ? 'car-marker' : 'car-marker loading';
             carElement.innerHTML = `
               <svg width="80" height="80" viewBox="0 0 98 98" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <g filter="url(#filter0_d_car)">
@@ -465,24 +507,86 @@ function NavigationApp({ initialDestination, onDestinationHandled }) {
       }
     };
     
-    // ===== REAL GEOLOCATION CODE =====
-    // Uses real device location for the car marker
+    // ===== INSTANT MAP LOAD WITH CACHED LOCATION =====
+    // Load map immediately with cached location (or fallback) for better UX
+    const cachedLocation = getCachedLocation();
+    const initialLocation = cachedLocation || FALLBACK_LOCATION;
+    
+    console.log('Initializing map immediately with:', cachedLocation ? 'cached location' : 'fallback location', initialLocation);
+    currentLocation.current = initialLocation;
+    initializeMap(initialLocation);
+    
+    // ===== REAL GEOLOCATION IN PARALLEL =====
+    // Request real location and update map when it arrives
     if ('geolocation' in navigator) {
-      console.log('Requesting your location...');
+      console.log('Requesting real-time location in background...');
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          console.log('Got your location:', position.coords);
-          initializeMap({
+          const realLocation = {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude
-          });
+          };
+          console.log('Got real location:', realLocation);
+          
+          // Update the stored location ref
+          currentLocation.current = realLocation;
+          
+          // Cache for next session
+          setCachedLocation(realLocation);
+          
+          setLocationStatus('found');
+          isLocationResolved.current = true;
+          
+          // Remove loading animation from car marker
+          if (carMarker.current) {
+            const markerElement = carMarker.current.getElement();
+            if (markerElement) {
+              markerElement.classList.remove('loading');
+            }
+          }
+          
+          // Check if location is significantly different from initial
+          const distance = calculateDistanceMiles(
+            initialLocation.latitude,
+            initialLocation.longitude,
+            realLocation.latitude,
+            realLocation.longitude
+          );
+          
+          // Only pan if location changed by more than 0.1 miles (about 160 meters)
+          if (distance > 0.1 && map.current) {
+            console.log(`Location changed by ${distance.toFixed(2)} miles, panning to real location`);
+            
+            // Smoothly pan to real location
+            map.current.flyTo({
+              center: [realLocation.longitude, realLocation.latitude],
+              zoom: 16,
+              duration: 1500
+            });
+            
+            // Update car marker position
+            if (carMarker.current) {
+              carMarker.current.setLngLat([realLocation.longitude, realLocation.latitude]);
+            }
+          } else {
+            console.log('Location similar to cached, no pan needed');
+          }
         },
         (error) => {
-          console.warn('Could not get location:', error.message);
+          console.warn('Could not get real location:', error.message);
           setLocationStatus('error');
-          // Fall back to preset location if geolocation fails
-          console.log('Falling back to preset location:', FAKE_CURRENT_LOCATION);
-          initializeMap(FAKE_CURRENT_LOCATION);
+          isLocationResolved.current = true;
+          
+          // Remove loading animation from car marker
+          if (carMarker.current) {
+            const markerElement = carMarker.current.getElement();
+            if (markerElement) {
+              markerElement.classList.remove('loading');
+            }
+          }
+          
+          // Already showing cached/fallback location, just log
+          console.log('Using initial location:', initialLocation);
         },
         {
           enableHighAccuracy: true,
@@ -491,10 +595,10 @@ function NavigationApp({ initialDestination, onDestinationHandled }) {
         }
       );
     } else {
-      console.warn('Geolocation not supported');
+      console.warn('Geolocation not supported, using initial location');
       setLocationStatus('error');
-      // Fall back to preset location if geolocation not supported
-      initializeMap(FAKE_CURRENT_LOCATION);
+      isLocationResolved.current = true;
+      // Already initialized with cached/fallback location
     }
 
     return () => {
@@ -1145,15 +1249,6 @@ function NavigationApp({ initialDestination, onDestinationHandled }) {
         onClearRoute={clearRoute}
         isLoadingRoute={isLoadingRoute}
       />
-      {!mapLoaded && (
-        <div className="map-loading">
-          <div className="loading-text">
-            {locationStatus === 'requesting' && 'Finding Your Location...'}
-            {locationStatus === 'error' && 'Loading Map (Using Default Location)...'}
-            {locationStatus === 'found' && 'Loading Map at Your Location...'}
-          </div>
-        </div>
-      )}
       {mapLoaded && locationStatus === 'requesting' && (
         <div className="location-status">
           <div className="status-indicator">
@@ -1169,7 +1264,7 @@ function NavigationApp({ initialDestination, onDestinationHandled }) {
                 />
               </circle>
             </svg>
-            <span>Finding your location...</span>
+            <span>Updating location...</span>
           </div>
         </div>
       )}
